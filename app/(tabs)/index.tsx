@@ -1,74 +1,99 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 
-export default function HomeScreen() {
+export default function Index() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View className="flex-1 bg-gray-100 px-5 pt-12">
+      {/* Encabezado */}
+      <View className=" flex-row items-center justify-between">
+        <Text className="text-2xl font-bold text-green-800">AgroAI</Text>
+        <Text className="text-sm text-gray-600">Tuxtla Gutiérrez, Chiapas</Text>
+      </View>
+
+      <View className='items-center justify-center py-10'>
+        <View className="bg-white rounded-2xl p-6 mb-4 shadow flex-row">
+          <View className='flex-1'>
+            <Text className="text-lg font-semibold mb-1 text-gray-800">Clima</Text>
+            <Text className="text-sm text-gray-600 mb-2">Hoy, 05 de marzo de 2025</Text>
+            <Text className="text-4xl font-bold">32°</Text>
+            <View className="flex-row gap-4 mt-2">
+              <View className='items-center'>
+                <Text className="text-sm">14:00 </Text>
+                <Text>🌤️</Text>
+              </View>
+              <View className='items-center'>
+                <Text className="text-sm">15:00 </Text>
+                <Text >☀️</Text>
+              </View>
+              <View className='items-center'>
+                <Text className="text-sm">16:00 </Text>
+                <Text>🌥️</Text>
+              </View>
+              <View className='items-center'>
+                <Text className="text-sm">17:00 </Text>
+                <Text>🌧️</Text>
+              </View>
+
+            </View>
+          </View>
+
+          <View className="items-start justify-center mr-4">
+            <Ionicons name="sunny" size={96} color="#facc15" />
+          </View>
+
+
+        </View>
+
+        {/* Estado del cultivo */}
+        <View className="bg-white rounded-2xl p-5 mb-4 gap-6 shadow flex-row">
+
+          <View className="flex-1">
+            <Image
+              source={require('../../assets/images/planta-feliz.png')}
+              className="w-20 h-24 self-center my-2 "
+            />
+          </View>
+          <View className="items-center justify-between mb-2">
+            <Text className="text-lg font-semibold mb-1 text-gray-800">Estado del cultivo</Text>
+            <Text className="text-sm text-gray-600 mb-2">Cultivo en buen estado</Text>
+            <View className="flex-row items-center justify-center gap-8 mt-2">
+              <View className='items-center'>
+                <Text>🌱</Text>
+                <Text className="text-sm">Tierra</Text>
+              </View>
+              <View className='items-center'>
+                <Text>🪴</Text>
+                <Text className="text-sm">Planta</Text>
+              </View>
+              <View className='items-center'>
+                <Text>💧</Text>
+                <Text className="text-sm">Hidratación</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Calcular NDVI */}
+        <View className="bg-white rounded-2xl p-5 mb-4 shadow flex-row">
+          <View className="flex-1  justify-center mb-2">
+            <Text className="text-lg font-semibold mb-1 text-gray-800">Calcular índice NDVI</Text>
+            <Text className="text-sm text-gray-600 mb-4">
+              Calcula el estrés hídrico, estado de tu cultivo y más con nuestra cámara multiespectral.
+            </Text>
+            <TouchableOpacity className="bg-green-700 px-4 py-2 rounded-xl self-start">
+              <Text className="text-white font-semibold">Usar cámara</Text>
+            </TouchableOpacity>
+          </View>
+          <View className="items-center flex-1 w-full h-full">
+            <Image
+              source={require('../../assets/images/planta.png')}
+              className="w-16 h-36 self-center"
+            />
+          </View>
+        </View>
+      </View>
+    </View >
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
