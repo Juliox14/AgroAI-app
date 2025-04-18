@@ -77,13 +77,14 @@ export default function Index() {
 
         {/* Calcular NDVI */}
         <View className="bg-white rounded-2xl p-5 mb-4 shadow flex-row">
-          <View className="flex-1  justify-center mb-2">
+          <View className="w-4/6 justify-center mb-2">
             <Text className="text-lg font-semibold mb-1 text-gray-800">Calcular índice NDVI</Text>
             <Text className="text-sm text-gray-600 mb-4">
-              Calcula el estrés hídrico, estado de tu cultivo y más con nuestra cámara multiespectral.
+            Calcula el éstres hídrico, estado de tu cultivo y más con nuestra cámara multiespectral potenciada con análisis de imágenes
             </Text>
-            <TouchableOpacity className="bg-green-700 px-4 py-2 rounded-xl self-start">
-              <Text className="text-white font-semibold">Usar cámara</Text>
+            <TouchableOpacity className="bg-green-700 px-4 py-2 rounded-xl self-start items-center justify-center flex-row">
+              <Ionicons name="camera-outline" size={24} color="white" />
+              <Text className="text-white font-semibold ml-2">Usar cámara</Text>
             </TouchableOpacity>
           </View>
           <View className="items-center flex-1 w-full h-full">

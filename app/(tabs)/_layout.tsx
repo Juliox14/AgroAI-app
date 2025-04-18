@@ -19,8 +19,9 @@ export default function LayoutTabs() {
                 },
                 tabBarStyle: {
                     backgroundColor: '#111727',
-                    borderRadius: 30,
-                    height: 90,
+                    borderTopLeftRadius: 30,
+                    borderTopRightRadius: 30,
+                    height: 80,
                     justifyContent: 'center',
                     alignItems: 'center',
 
