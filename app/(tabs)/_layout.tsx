@@ -8,7 +8,7 @@ export default function LayoutTabs() {
     return (
         <Tabs
             screenOptions={{
-                tabBarShowLabel: false,
+                tabBarShowLabel: true,
                 tabBarItemStyle: {
                     width: '100%',
                     height: "100%",
@@ -46,6 +46,7 @@ export default function LayoutTabs() {
                 name="plantas"
                 options={{
                     title: 'Plantas',
+                    headerShown: false,
                     tabBarIcon: ({ focused }) => (
                         <Ionicons
                             name="leaf-outline"
@@ -58,7 +59,8 @@ export default function LayoutTabs() {
             <Tabs.Screen
                 name="escanear"
                 options={{
-                    title: 'Escanear',
+                    title: ' ',
+                    headerShown: false,
                     tabBarIcon: ({ focused }) => (
                         <View className='bg-[#49f19a] rounded-full w-14 h-14 justify-center items-center  p-2'>
                             <Ionicons
@@ -74,6 +76,7 @@ export default function LayoutTabs() {
                 name="tierra"
                 options={{
                     title: 'Tierra',
+                    headerShown: false,
                     tabBarIcon: ({ focused }) => (
                         <MaterialCommunityIcons
                             name="sprout-outline"
@@ -87,7 +90,8 @@ export default function LayoutTabs() {
             <Tabs.Screen
                 name="configuracion"
                 options={{
-                    title: 'Configuración',
+                    title: 'Ajustes',
+                    headerShown: false,
                     tabBarIcon: ({ focused }) => (
                         <Ionicons
                             name="settings-outline"

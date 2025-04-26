@@ -1,14 +1,15 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function Index() {
   return (
-    <View className="flex-1 bg-gray-100 px-5 pt-12">
+    <SafeAreaView className="flex-1 bg-gray-100 px-5 pt-6">
       {/* Encabezado */}
       <View className=" flex-row items-center justify-between">
-        <Text className="text-2xl font-bold text-green-800">AgroAI</Text>
+        <Image source={require('../../assets/images/AgroAI-letters.png')} className='w-32 h-8' />
         <Text className="text-sm text-gray-600">Tuxtla Gutiérrez, Chiapas</Text>
       </View>
 
@@ -95,6 +96,6 @@ export default function Index() {
           </View>
         </View>
       </View>
-    </View >
+    </SafeAreaView >
   );
 }
