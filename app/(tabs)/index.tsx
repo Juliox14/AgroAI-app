@@ -8,7 +8,7 @@ export default function Index() {
   return (
     <SafeAreaView className="flex-1 bg-gray-100 px-5 pt-6">
       {/* Encabezado */}
-      <View className=" flex-row items-center justify-between">
+      <View className="flex-row items-center justify-between">
         <Image source={require('../../assets/images/AgroAI-letters.png')} className='w-32 h-8' />
         <Text className="text-sm text-gray-600">Tuxtla Gutiérrez, Chiapas</Text>
       </View>

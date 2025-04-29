@@ -24,7 +24,6 @@ export default function LayoutTabs() {
                     height: 80,
                     justifyContent: 'center',
                     alignItems: 'center',
-
                 }
             }}
         >
@@ -57,10 +56,11 @@ export default function LayoutTabs() {
                 }}
             />
             <Tabs.Screen
-                name="escanear"
+                name="camara/index"
                 options={{
                     title: ' ',
                     headerShown: false,
+                    tabBarStyle: { display: 'none' },
                     tabBarIcon: ({ focused }) => (
                         <View className='bg-[#49f19a] rounded-full w-14 h-14 justify-center items-center  p-2'>
                             <Ionicons
@@ -69,9 +69,12 @@ export default function LayoutTabs() {
                                 color="#111727"
                             />
                         </View>
-                    )
+                    ),
+
                 }}
             />
+
+            
             <Tabs.Screen
                 name="tierra"
                 options={{
@@ -104,3 +107,4 @@ export default function LayoutTabs() {
         </Tabs>
     );
 }
+
