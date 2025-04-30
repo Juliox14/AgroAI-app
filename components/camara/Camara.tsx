@@ -9,7 +9,13 @@ import FlujoCaptura from './FlujoCaptura';
 import MarcoGuia from './MarcoGuia';
 import { Asset } from 'expo-asset';
 import axios from 'axios';
+import { useLocalIp } from '@/hooks/useLocalIp';
+import CargandoAnalisis from '../Analizando'; // Ajusta la ruta si está en otro directorio
 
+
+
+
+const ip = useLocalIp();
 
 
 type CapturedPhoto = {
@@ -28,6 +34,7 @@ export default function Camara() {
     { filtro: 'Filtro IR', uri: null },
   ]);
   const [facing, setFacing] = useState<CameraType>('back');
+  const [analizando, setAnalizando] = useState(false);
   const cameraRef: any = useRef(null);
   const router = useRouter();
 
@@ -53,14 +60,13 @@ export default function Camara() {
 
         try {
           let angulo = 90;
-
           if (filter === 'Filtro azul') {
-            angulo = 45;
+            angulo = 150;
           } else if (filter === 'Filtro IR') {
-            angulo = 135;
+            angulo = 10;
           }
 
-          await axios.get(`http://192.168.4.1/mover?angulo=${angulo}`);
+          await axios.get(`http://192.168.193.101/move?angle=${angulo}`);
 
           console.log(`🛰️ Filtro cambiado a ${filter} (ángulo ${angulo}°)`);
         } catch (error: any) {
@@ -78,12 +84,13 @@ export default function Camara() {
       const photo = await cameraRef.current.takePictureAsync();
 
       const nextIndex = capturedPhotos.findIndex((foto) => foto.uri === null);
-
+      console.log(capturedPhotos);
       if (nextIndex !== -1) {
         const newPhotos = [...capturedPhotos];
         newPhotos[nextIndex].uri = photo.uri;
         setCapturedPhotos(newPhotos);
       }
+
     }
   };
 
@@ -97,44 +104,65 @@ export default function Camara() {
 
   const enviarFotos = async () => {
     try {
-      // 1. Cargar imágenes desde assets
-      const [noFilterAsset, blueFilterAsset, irFilterAsset] = await Promise.all([
-        Asset.loadAsync(require('../../assets/images/no_filter.jpeg')),
-        Asset.loadAsync(require('../../assets/images/blue_filter.jpeg')),
-        Asset.loadAsync(require('../../assets/images/ir_filter.jpeg')),
-      ]);
+      const faltantes = capturedPhotos.filter((foto) => !foto.uri);
+      if (faltantes.length > 0) {
+        alert('Por favor toma las 3 fotos antes de enviar.');
+        return;
+      }
   
-      const formData = new FormData();
-      formData.append('sin_filtro', {
-        uri: noFilterAsset[0].localUri || noFilterAsset[0].uri,
-        type: 'image/jpeg',
-        name: 'no_filter.jpeg',
-      } as any);
-      formData.append('filtro_azul', {
-        uri: blueFilterAsset[0].localUri || blueFilterAsset[0].uri,
-        type: 'image/jpeg',
-        name: 'blue_filter.jpeg',
-      } as any);
-      formData.append('filtro_ir', {
-        uri: irFilterAsset[0].localUri || irFilterAsset[0].uri,
-        type: 'image/jpeg',
-        name: 'ir_filter.jpeg',
-      } as any);
+      // Mostrar overlay de carga
+      setAnalizando(true);
   
-      // 2. Enviar al API Gateway
-      const response = await axios.post('http://192.168.100.3:3000/ndvi/analizar-ndvi/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Esperar 500ms para mostrar animación antes del envío real
+      setTimeout(async () => {
+        const formData = new FormData();
+        formData.append('nombre', 'captura_agroai');
   
-      console.log('✅ Respuesta del backend:', response.data);
-      console.log('📊 NDVI Stats:', response.headers['x-ndvi-stats']);
+        for (const foto of capturedPhotos) {
+          if (!foto.uri) continue;
+  
+          const fieldName =
+            foto.filtro === 'Sin filtro'
+              ? 'sin_filtro'
+              : foto.filtro === 'Filtro azul'
+              ? 'filtro_azul'
+              : 'filtro_ir';
+  
+          formData.append(fieldName, {
+            uri: foto.uri,
+            type: 'image/jpeg',
+            name: `${fieldName}.jpg`,
+          } as any);
+        }
+  
+        const response = await axios.post(`http://192.168.193.166:3000/ndvi/procesar`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+  
+        const ndviStats = response.data.ndviStats;
+  
+        // ✅ Redirigir a la pantalla de resultados con solo las stats
+        router.push({
+          pathname: '/results/NDVIResult',
+          params: {
+            stats: JSON.stringify(ndviStats), // 📦 ¡importante! stringify para que pueda parsearse después
+          },
+        });
+  
+        setAnalizando(false); // ocultar overlay
+      }, 500);
   
     } catch (error: any) {
-      console.error('❗ Error al enviar imágenes:', error.message);
+      console.error('❗ Error al enviar imágenes:', error);
+      alert('Error al enviar las imágenes');
+      setAnalizando(false);
     }
   };
+  
+
+
 
 
   return (
@@ -145,6 +173,10 @@ export default function Camara() {
     >
 
       <MarcoGuia />
+
+
+      <CargandoAnalisis visible={analizando} />
+
 
       <View className="absolute top-6 left-5 right-5 flex-row justify-between">
         <Boton
@@ -161,7 +193,6 @@ export default function Camara() {
         />
       </View>
 
-      {/* Previews de imágenes */}
       <View className="absolute bottom-36 left-5 right-5 flex-row justify-center gap-4 items-center">
         {capturedPhotos.map((foto, index) => (
           <PreviewImagen

@@ -1,16 +1,51 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import * as Location from 'expo-location';
 
 export default function Index() {
+  const [locationName, setLocationName] = useState<string>('Cargando ubicación...');
+
+  useEffect(() => {
+    const obtenerUbicacion = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permiso denegado', 'Se requiere permiso de ubicación para mostrar el estado y municipio.');
+          return;
+        }
+        const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+
+        const [placemark] = await Location.reverseGeocodeAsync({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude
+        });
+
+        if (placemark) {
+          const estado = placemark.region;  
+          const municipio = placemark.city || placemark.district || placemark.subregion;
+
+          setLocationName(`${municipio || 'Municipio desconocido'}, ${estado || 'Estado desconocido'}`);
+        } else {
+          setLocationName('Ubicación no disponible');
+        }
+
+      } catch (error) {
+        console.error('Error al obtener ubicación:', error);
+        setLocationName('Error obteniendo ubicación');
+      }
+    };
+
+    obtenerUbicacion();
+  }, []);
+
   return (
     <SafeAreaView className="flex-1 bg-gray-100 px-5 pt-6">
-      {/* Encabezado */}
+      
       <View className="flex-row items-center justify-between">
         <Image source={require('../../assets/images/AgroAI-letters.png')} className='w-32 h-8' />
-        <Text className="text-sm text-gray-600">Tuxtla Gutiérrez, Chiapas</Text>
+        <Text className="text-sm text-gray-600">{locationName}</Text>
       </View>
 
       <View className='items-center justify-center py-10'>
@@ -81,7 +116,7 @@ export default function Index() {
           <View className="w-4/6 justify-center mb-2">
             <Text className="text-lg font-semibold mb-1 text-gray-800">Calcular índice NDVI</Text>
             <Text className="text-sm text-gray-600 mb-4">
-            Calcula el éstres hídrico, estado de tu cultivo y más con nuestra cámara multiespectral potenciada con análisis de imágenes
+              Calcula el éstres hídrico, estado de tu cultivo y más con nuestra cámara multiespectral potenciada con análisis de imágenes
             </Text>
             <TouchableOpacity className="bg-green-700 px-4 py-2 rounded-xl self-start items-center justify-center flex-row">
               <Ionicons name="camera-outline" size={24} color="white" />
