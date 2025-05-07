@@ -27,7 +27,7 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
     setLoading(true);
     console.log("Tu putamadre", email, password);
     try {
-      const res = await fetch("http://192.168.100.47:3000/auth/login", {
+      const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
     console.log("Token", token);
 
     try{
-      const res = await fetch("http://192.168.100.47:3000/auth", {
+      const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/auth`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

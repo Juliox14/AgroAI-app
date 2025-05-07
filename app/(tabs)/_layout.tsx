@@ -5,6 +5,9 @@ import { View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function LayoutTabs() {
+
+    
+
     return (
         <Tabs
             screenOptions={{
