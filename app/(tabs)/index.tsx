@@ -96,7 +96,7 @@ export default function Index() {
 
   return (
     <>
-      {session && (
+      {session ? (
         <SafeAreaView className="flex-1 bg-gray-100">
           <LocationHeader locationName={locationName} />
           <ScrollView className="px-5 pt-6">
@@ -159,6 +159,8 @@ export default function Index() {
             </View>
           </ScrollView>
         </SafeAreaView>
+      ) : (
+        <Redirect href="/login" />
       )}
     </>
   );
