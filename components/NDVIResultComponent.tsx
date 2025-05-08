@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Result from './Result'; // Assuming you have a Result component
 
 interface Props {
   stats: {
@@ -12,28 +13,34 @@ interface Props {
 
 export default function NDVIResultComponent({ stats }: Props) {
   return (
-    <View style={styles.container}>
+    <View className='flex-1 bg-white p-6 gap-6 h-full'>
       <Text style={styles.title}>Resultados del análisis NDVI</Text>
 
-      <View style={styles.statBox}>
-        <Text style={styles.label}>🌿 Área saludable:</Text>
-        <Text style={styles.value}>{stats.healthy_percentage.toFixed(2)}%</Text>
-      </View>
+      <Result
+        nameIcon="leaf"
+        value={stats.healthy_percentage}
+        label="Porcentaje de vegetación sana"
+      />
 
-      <View style={styles.statBox}>
-        <Text style={styles.label}>🌞 Estrés hídrico:</Text>
-        <Text style={styles.value}>{stats.stressed_percentage.toFixed(2)}%</Text>
-      </View>
 
-      <View style={styles.statBox}>
-        <Text style={styles.label}>🔥 Zona seca:</Text>
-        <Text style={styles.value}>{stats.dry_percentage.toFixed(2)}%</Text>
-      </View>
+      <Result
+        nameIcon="water"
+        value={stats.stressed_percentage}
+        label="Porcentaje de estrés hídrico"
+      />
 
-      <View style={styles.statBox}>
-        <Text style={styles.label}>⚠️ Anomalías detectadas:</Text>
-        <Text style={styles.value}>{stats.anomaly_percentage.toFixed(2)}%</Text>
-      </View>
+      <Result
+        nameIcon="skull"
+        value={stats.dry_percentage}
+        label="Porcentaje de vegetación seca"
+      />
+
+
+      <Result
+        nameIcon="alert-circle"
+        value={stats.anomaly_percentage}
+        label="Porcentaje de anomalías"
+      />
     </View>
   );
 }

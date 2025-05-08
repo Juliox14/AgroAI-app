@@ -19,7 +19,6 @@ import { ForecastItem } from '@/components/home/DailyForecast';
 import { normalizarEstado } from '@/utils/normalizarEstado';
 import { Ionicons } from '@expo/vector-icons';
 
-const GATEWAY = 'http://192.168.100.3:3000';
 
 export default function Index() {
 
@@ -67,7 +66,7 @@ export default function Index() {
             municipio: string;
             pronostico: ForecastItem[];
           };
-        }>(`${GATEWAY}/clima/pronostico`, {
+        }>(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/clima/pronostico`, {
           params: { estado, municipio }
         });
 
@@ -96,7 +95,7 @@ export default function Index() {
 
   return (
     <>
-      {session && (
+      {/* {session && ( */}
         <SafeAreaView className="flex-1 bg-gray-100">
           <LocationHeader locationName={locationName} />
           <ScrollView className="px-5 pt-6">
@@ -159,7 +158,7 @@ export default function Index() {
             </View>
           </ScrollView>
         </SafeAreaView>
-      )}
+      {/* )} */}
     </>
   );
 }

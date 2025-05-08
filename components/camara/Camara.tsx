@@ -80,7 +80,7 @@ export default function Camara() {
             { uri: p.uri!, name: `${p.filtro}.jpg`, type: 'image/jpeg' } as any
           );
         }
-        const res = await axios.post('http://192.168.100.3:3000/ndvi/procesar', form, {
+        const res = await axios.post(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/ndvi/procesar`, form, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         const stats = res.data.ndviStats;
@@ -92,6 +92,33 @@ export default function Camara() {
       }
     }, 500);
   };
+
+  useEffect(() => {
+    const cambiarFiltro = async () => {
+      const currentPhoto = capturedPhotos.find((foto) => foto.uri === null);
+
+      if (currentPhoto) {
+        const filter = currentPhoto.filtro;
+
+        try {
+          let angulo = 90;
+          if (filter === 'Filtro azul') {
+            angulo = 180;
+          } else if (filter === 'Filtro IR') {
+            angulo = 35;
+          }
+
+          await axios.get(`http://192.168.130.101/move?angle=${angulo}`);
+
+          console.log("🛰️ Filtro cambiado a ${filter} (ángulo ${angulo}°)");
+        } catch (error: any) {
+          console.error('❗ Error al cambiar el filtro:', error.message);
+        }
+      }
+    };
+
+    cambiarFiltro();
+  }, [capturedPhotos]);
 
   return (
     <View style={styles.container}>

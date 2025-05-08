@@ -1,5 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import NDVIResultComponent from '@/components/NDVIResultComponent';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NDVIResult() {
   const { stats } = useLocalSearchParams();
@@ -7,6 +8,8 @@ export default function NDVIResult() {
   const parsedStats = JSON.parse(stats as string);
 
   return (
-    <NDVIResultComponent stats={parsedStats} />
+    <SafeAreaView className="flex-1 bg-white">
+      <NDVIResultComponent stats={parsedStats} />
+    </SafeAreaView>
   );
 }

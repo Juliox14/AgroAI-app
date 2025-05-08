@@ -2,14 +2,21 @@
 import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
 
-const iconByDesc: Record<string, string> = {
-  Despejado: '☀️',
+
+type emojiByDesc = {
+  [key: string]: string;
+};
+
+
+const emojiByDesc: emojiByDesc = {
+  'Despejado': '☀️',
   'Mayormente despejado': '🌤️',
-  'Parcial nuboso': '⛅',
+  'Parcial nuboso': '⛅️',
+  'Poco nuboso': '⛅️',
   'Cielo nublado': '☁️',
-  'Medio nublado': '⛅',
-  'Lluvia aislada': '🌧️',
-  Tormenta: '⛈️',
+  'Medio nublado': '☁️',
+  'Lluvia aislada':'🌧️',
+  'Tormenta': '⛈️',
 };
 
 export type ForecastItem = {
@@ -32,9 +39,7 @@ interface Props {
 }
 
 export default function DailyForecast({ data }: Props) {
-  console.log('data', data);
   const items = Array.isArray(data) ? data : [];
-  console.log('items', items);
 
   // Etiqueta legible para cada día
   const labelFor = (ndia: string) => {
@@ -71,7 +76,7 @@ export default function DailyForecast({ data }: Props) {
       className="mt-4"
     >
       {items.slice(0, 4).map((forecast, i) => {
-        const icon = iconByDesc[forecast.desciel] || '❔';
+        const emoji = emojiByDesc[forecast.desciel] || '❔';
         const label = getDia(forecast);
         return (
           <View
@@ -81,7 +86,7 @@ export default function DailyForecast({ data }: Props) {
             <Text className="text-sm font-medium text-gray-600 mb-1">
               {label}
             </Text>
-            <Text className="text-2xl mb-1">{icon}</Text>
+            <Text className="text-2xl mb-1">{emoji}</Text>
             <Text className="text-base font-semibold">
               {forecast.tmax}° / {forecast.tmin}°
             </Text>
