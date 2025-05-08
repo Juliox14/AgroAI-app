@@ -32,6 +32,7 @@ export default function Index() {
 
   // 1) Pedir permisos y calcular estado completo + municipio
   useEffect(() => {
+
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {

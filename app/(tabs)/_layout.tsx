@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
