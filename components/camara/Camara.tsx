@@ -75,16 +75,24 @@ export default function Camara() {
             p.filtro === 'Sin filtro'
               ? 'sin_filtro'
               : p.filtro === 'Filtro azul'
-              ? 'filtro_azul'
-              : 'filtro_ir',
+                ? 'filtro_azul'
+                : 'filtro_ir',
             { uri: p.uri!, name: `${p.filtro}.jpg`, type: 'image/jpeg' } as any
           );
         }
         const res = await axios.post(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/ndvi/procesar`, form, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        const stats = res.data.ndviStats;
-        router.push({ pathname: '/results/NDVIResult', params: { stats: JSON.stringify(stats) } });
+        const { ndviStats, imagenNDVI } = res.data;
+
+        router.push({
+          pathname: '/results/NDVIResult',
+          params: {
+            stats: JSON.stringify(ndviStats),
+            image: imagenNDVI,               
+          },
+        });
+
       } catch {
         alert('Error enviando imágenes');
       } finally {

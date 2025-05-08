@@ -56,7 +56,7 @@ const Result = ({ nameIcon = 'water', value = 0.42, label = 'Estrés hídrico' }
   return (
     <View className="flex-row rounded-2xl items-center justify-between bg-white p-4 shadow-sm w-auto">
       <View className="justify-center p-4">
-        <Ionicons name={nameIcon} size={24} color="#4ade80" />
+        <Ionicons name={nameIcon} size={24} color="#4ade80" className='mb-2' />
         <Text className="text-2xl font-bold">{value}%</Text>
         <Text className="text-sm text-gray-500">{label}</Text>
       </View>

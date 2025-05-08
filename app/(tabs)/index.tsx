@@ -18,10 +18,10 @@ import WeatherCard from '@/components/home/WeatherCard';
 import { ForecastItem } from '@/components/home/DailyForecast';
 import { normalizarEstado } from '@/utils/normalizarEstado';
 import { Ionicons } from '@expo/vector-icons';
-
+import { useRouter } from 'expo-router';
 
 export default function Index() {
-
+  const router = useRouter();
   const { session } = useAuth();
   const [locationName, setLocationName] = useState('Cargando ubicación...');
   const [estado, setEstado] = useState<string>();
@@ -29,7 +29,6 @@ export default function Index() {
   const [forecast, setForecast] = useState<ForecastItem[]>([]);
   const [loadingForecast, setLoading] = useState(false);
 
-  // 1) Pedir permisos y calcular estado completo + municipio
   useEffect(() => {
 
     (async () => {
@@ -135,7 +134,6 @@ export default function Index() {
               </View>
             </View>
 
-            {/* Botón para NDVI */}
             <View className="bg-white rounded-2xl p-5 mb-4 shadow flex-row">
               <View className="w-4/6 justify-center mb-2">
                 <Text className="text-lg font-semibold mb-1 text-gray-800">
@@ -145,7 +143,8 @@ export default function Index() {
                   Calcula el estrés hídrico, estado de tu cultivo y más con nuestra
                   cámara multiespectral potenciada con análisis de imágenes
                 </Text>
-                <TouchableOpacity className="bg-green-700 px-4 py-2 rounded-xl self-start items-center justify-center flex-row">
+                <TouchableOpacity className="bg-green-700 px-4 py-2 rounded-xl self-start items-center justify-center flex-row"
+                  onPress={() => router.push('/camara')}>
                   <Ionicons name="camera-outline" size={24} color="white" />
                   <Text className="text-white font-semibold ml-2">Usar cámara</Text>
                 </TouchableOpacity>
@@ -157,6 +156,49 @@ export default function Index() {
                 />
               </View>
             </View>
+
+            {/* <View className="bg-white rounded-2xl p-5 mb-4 shadow">
+              <Text className="text-lg font-semibold text-gray-800 mb-2">
+                Conoce más sobre el NDVI
+              </Text>
+              <Text className="text-sm text-gray-600">
+                El Índice de Vegetación de Diferencia Normalizada (NDVI) es una métrica
+                que revela la salud de las plantas comparando la reflexión infrarroja e 
+                infrarroja cercana. Valores cercanos a 1 indican vegetación sana, mientras
+                que valores cercanos a -1 pueden señalizar agua o suelo desnudo.
+              </Text>
+              <Text className="text-sm text-gray-600 mt-2">
+                Nuestro análisis marca zonas de estrés y anomalías para que puedas tomar
+                decisiones informadas en tu cultivo.
+              </Text>
+            </View>
+
+            <View className="bg-white rounded-2xl p-5 mb-4 shadow flex">
+              <Text className="text-lg font-semibold text-gray-800 mb-2 text-right">
+                Conoce quiénes somos
+              </Text>
+              <Text className="text-sm text-gray-600 text-right items-end w-[80%]">
+                Somos un equipo de desarrolladores apasionados por la agro-tecnología:
+              </Text>
+              <View className="gap-4 mt-4">
+                <Text className="text-gray-700 text-right">• Julián Castro</Text>
+                <Text className="text-gray-700 text-right">• Cristian Alfonsín</Text>
+                <Text className="text-gray-700 text-right">• Gunther Nettel</Text>
+                <Text className="text-gray-700 text-right">• Jonathan Sixtos</Text>
+              </View>
+            </View> */}
+
+            <View className="flex-row justify-center items-center mt-6 mb-4">
+              <Text className="text-xs text-gray-500 mr-2">
+                Powered by WindCode
+              </Text>
+              <Image
+                source={require('../../assets/images/windcode-logo.png')}
+                className="w-6 h-6"
+                resizeMode="contain"
+              />
+            </View>
+
           </ScrollView>
         </SafeAreaView>
       ) : (

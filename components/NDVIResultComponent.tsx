@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import Result from './Result'; // Assuming you have a Result component
+import ZoomableImage from './ZoomableImage'; // Assuming you have a ZoomableImage component
 
 interface Props {
   stats: {
@@ -9,70 +10,75 @@ interface Props {
     dry_percentage: number;
     anomaly_percentage: number;
   };
+  imageBase64: string;
 }
 
-export default function NDVIResultComponent({ stats }: Props) {
+export default function NDVIResultComponent({ stats, imageBase64 }: Props) {
+  const uri = `data:image/jpeg;base64,${imageBase64}`;
   return (
-    <View className='flex-1 bg-white p-6 gap-6 h-full'>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Resultados del análisis NDVI</Text>
 
-      <Result
-        nameIcon="leaf"
-        value={stats.healthy_percentage}
-        label="Porcentaje de vegetación sana"
+      <ZoomableImage
+        source={{ uri }}
+        thumbnailStyle={styles.previewImage}
+      /* opcional puedes pasar modalImageStyle si quieres bordes o márgenes */
       />
 
-
-      <Result
-        nameIcon="water"
-        value={stats.stressed_percentage}
-        label="Porcentaje de estrés hídrico"
-      />
-
-      <Result
-        nameIcon="skull"
-        value={stats.dry_percentage}
-        label="Porcentaje de vegetación seca"
-      />
+      <View className='flex-1 gap-6'>
+        <Result
+          nameIcon="leaf"
+          value={stats.healthy_percentage}
+          label="Porcentaje de vegetación sana"
+        />
 
 
-      <Result
-        nameIcon="alert-circle"
-        value={stats.anomaly_percentage}
-        label="Porcentaje de anomalías"
-      />
-    </View>
+        <Result
+          nameIcon="water"
+          value={stats.stressed_percentage}
+          label="Porcentaje de estrés hídrico"
+        />
+
+        <Result
+          nameIcon="skull"
+          value={stats.dry_percentage}
+          label="Porcentaje de vegetación seca"
+        />
+
+
+        <Result
+          nameIcon="alert-circle"
+          value={stats.anomaly_percentage}
+          label="Porcentaje de anomalías"
+        />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 24,
+  scrollView: {
+    flex: 1,              // make the scroll view fill its parent
     backgroundColor: '#fff',
-    flex: 1,
+  },
+  contentContainer: {
+    padding: 24,
+    gap: 20,
+    // you can use flexGrow if you want centering when there's little content:
+    // flexGrow: 1,
+    // justifyContent: 'center'
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 16,
     textAlign: 'center',
     color: '#1f2937',
   },
-  statBox: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-    padding: 12,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 10,
-  },
-  label: {
-    fontSize: 16,
-    color: '#374151',
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#16a34a',
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 24,
   },
 });
