@@ -61,38 +61,72 @@ export default function Camara() {
 
   // Enviar al backend
   const enviarFotos = async () => {
-    // if (capturedPhotos.some(p => p.uri === null)) {
-    //   alert('Toma las 3 fotos primero');
-    //   return;
-    // }
-    // setAnalizando(true);
-    // setTimeout(async () => {
-    //   try {
-    //     const form = new FormData();
-    //     form.append('nombre', 'captura_agroai');
-    //     for (const p of capturedPhotos) {
-    //       form.append(
-    //         p.filtro === 'Sin filtro'
-    //           ? 'sin_filtro'
-    //           : p.filtro === 'Filtro azul'
-    //           ? 'filtro_azul'
-    //           : 'filtro_ir',
-    //         { uri: p.uri!, name: `${p.filtro}.jpg`, type: 'image/jpeg' } as any
-    //       );
-    //     }
-    //     const res = await axios.post('http://192.168.100.3:3000/ndvi/procesar', form, {
-    //       headers: { 'Content-Type': 'multipart/form-data' },
-    //     });
-    //     const stats = res.data.ndviStats;
-        // router.push({ pathname: '/results/NDVIResult', params: { stats: JSON.stringify(stats) } });
-        router.push({ pathname: '/results/NDVIResult' });
-    //   } catch {
-    //     alert('Error enviando imágenes');
-    //   } finally {
-    //     setAnalizando(false);
-    //   }
-    // }, 500);
+    if (capturedPhotos.some(p => p.uri === null)) {
+      alert('Toma las 3 fotos primero');
+      return;
+    }
+    setAnalizando(true);
+    setTimeout(async () => {
+      try {
+        const form = new FormData();
+        form.append('nombre', 'captura_agroai');
+        for (const p of capturedPhotos) {
+          form.append(
+            p.filtro === 'Sin filtro'
+              ? 'sin_filtro'
+              : p.filtro === 'Filtro azul'
+                ? 'filtro_azul'
+                : 'filtro_ir',
+            { uri: p.uri!, name: `${p.filtro}.jpg`, type: 'image/jpeg' } as any
+          );
+        }
+        const res = await axios.post(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/ndvi/procesar`, form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        const { ndviStats, imagenNDVI } = res.data;
+
+        router.push({
+          pathname: '/results/NDVIResult',
+          params: {
+            stats: JSON.stringify(ndviStats),
+            image: imagenNDVI,               
+          },
+        });
+
+      } catch {
+        alert('Error enviando imágenes');
+      } finally {
+        setAnalizando(false);
+      }
+    }, 500);
   };
+
+  useEffect(() => {
+    const cambiarFiltro = async () => {
+      const currentPhoto = capturedPhotos.find((foto) => foto.uri === null);
+
+      if (currentPhoto) {
+        const filter = currentPhoto.filtro;
+
+        try {
+          let angulo = 90;
+          if (filter === 'Filtro azul') {
+            angulo = 180;
+          } else if (filter === 'Filtro IR') {
+            angulo = 35;
+          }
+
+          await axios.get(`http://192.168.130.101/move?angle=${angulo}`);
+
+          console.log("🛰️ Filtro cambiado a ${filter} (ángulo ${angulo}°)");
+        } catch (error: any) {
+          console.error('❗ Error al cambiar el filtro:', error.message);
+        }
+      }
+    };
+
+    cambiarFiltro();
+  }, [capturedPhotos]);
 
   return (
     <View style={styles.container}>

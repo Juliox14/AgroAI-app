@@ -23,6 +23,7 @@ const emojiByDesc: emojiByDesc = {
     'Despejado': '☀️',
     'Mayormente despejado': '🌤️',
     'Parcial nuboso': '⛅️',
+    'Poco nuboso': '⛅️',
     'Cielo nublado': '☁️',
     'Medio nublado': '☁️',
     'Lluvia aislada':'🌧️',

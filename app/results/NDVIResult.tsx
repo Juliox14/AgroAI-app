@@ -1,14 +1,17 @@
 import { useLocalSearchParams } from 'expo-router';
 import NDVIResultComponent from '@/components/NDVIResultComponent';
-import NDVIPrueba from '@/components/NDVIPrueba';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NDVIResult() {
-  const { stats } = useLocalSearchParams();
+  const { stats, image } = useLocalSearchParams();
 
-  // const parsedStats = JSON.parse(stats as string);
+  const parsedStats = JSON.parse(stats as string);
+  const base64 = image as string;
+
 
   return (
-    // <NDVIResultComponent stats={parsedStats} />
-    <NDVIPrueba />
+    <SafeAreaView className="flex-1 bg-white">
+      <NDVIResultComponent stats={parsedStats} imageBase64={base64} />
+    </SafeAreaView>
   );
 }
