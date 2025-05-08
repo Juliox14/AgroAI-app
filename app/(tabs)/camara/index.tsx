@@ -6,7 +6,6 @@ import { View, Text, TouchableOpacity, SafeAreaView, } from 'react-native';
 export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
 
-
   if (!permission) return <View className="flex-1 bg-black" />;
   if (!permission.granted) {
     return (
@@ -23,8 +22,6 @@ export default function CameraScreen() {
       </View>
     );
   }
-
-
 
   return (
     <SafeAreaView className="flex-1 bg-black">

@@ -1,6 +1,6 @@
-import { useContext, createContext, useState } from "react";
+import { useContext, createContext, useState, useEffect } from "react";
 import { SafeAreaView, View, ActivityIndicator, Alert } from "react-native";
-import { getItemAsync, setItemAsync, deleteItemAsync } from "expo-secure-store";
+import { getItemAsync, setItemAsync } from "expo-secure-store";
 
 type User = {
   name: string;
@@ -13,7 +13,7 @@ type AuthContextType = {
   session: boolean;
   signIn: (email: string, password: string) => Promise<Response | undefined>;
   signOut: () => Promise<void>;
-  authVeryfication: () => Promise<void>;
+  authVerification: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -25,9 +25,8 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
   
   const signIn = async (email: string, password: string) => {
     setLoading(true);
-    console.log("Tu putamadre", email, password);
     try {
-      const res = await fetch("http://192.168.100.47:3000/auth/login", {
+      const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,37 +59,50 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
 
   };
 
-  const authVeryfication = async () => {
+  const authVerification = async () => {
     setLoading(true);
     const token = await getItemAsync('token');
-
+  
     console.log("Token", token);
-
-    try{
-      const res = await fetch("http://192.168.100.47:3000/auth", {
+  
+    if (!token) {
+      setSession(false);
+      setLoading(false);
+      return;
+    }
+  
+    try {
+      const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/auth`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
-      })
-
+      });
+  
       const data = await res.json();
-
+  
       if (!res.ok) {
         Alert.alert(res.status.toString(), data.message);
+        setSession(false);
         setLoading(false);
         return;
       }
       
       setSession(true);
       setLoading(false);
-    }catch(error){
+    } catch(error) {
       console.error('Error al verificar la sesión', error);
       Alert.alert('Error', 'No se pudo verificar la sesión. Intenta de nuevo más tarde.');
+      setSession(false);
+      setLoading(false);
     }
   }
 
-  const contextData = { user, loading, session, signIn, signOut, authVeryfication };
+  useEffect(() => {
+    authVerification();
+  }, []);
+
+  const contextData = { user, loading, session, signIn, signOut, authVerification };
 
   return (
     <AuthContext.Provider value={contextData}>
