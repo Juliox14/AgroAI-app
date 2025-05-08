@@ -45,7 +45,6 @@ const LoginScreen = () => {
           className="flex-1"
         >
           <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
-            {/* Header con logo - Perfectamente centrado y más grande */}
             <View style={{
               width: '100%',
               alignItems: 'center',
@@ -64,7 +63,6 @@ const LoginScreen = () => {
               />
             </View>
             
-            {/* Contenido de registro */}
             <View className="p-4">
               <View className="bg-white rounded-xl p-6 shadow-sm mb-4">
                 <Text className="text-2xl font-bold text-gray-800 mb-6">Iniciar sesión</Text>
@@ -84,7 +82,6 @@ const LoginScreen = () => {
                   </View>
                 </View>
                 
-                {/* Campo de contraseña */}
                 <View className="mb-6">
                   <Text className="text-gray-700 mb-2 font-medium">Contraseña</Text>
                   <View className="bg-gray-100 rounded-lg flex-row items-center px-3 border border-gray-200">
