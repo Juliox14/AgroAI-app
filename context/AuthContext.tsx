@@ -1,6 +1,11 @@
+// types
+import { responseAuth } from "@/interfaces/response.auth";
+import { payload } from "@/types/auth";
+
 import { useContext, createContext, useState, useEffect } from "react";
 import { SafeAreaView, View, ActivityIndicator, Alert } from "react-native";
 import { getItemAsync, setItemAsync } from "expo-secure-store";
+import { decodeJWT } from "@/utils/JWT";
 
 type User = {
   name: string;
@@ -11,6 +16,7 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   session: boolean;
+  payload: payload | null;
   signIn: (email: string, password: string) => Promise<Response | undefined>;
   signOut: () => Promise<void>;
   authVerification: () => Promise<void>;
@@ -21,8 +27,9 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState(false);
+  const [payload, setPayload] = useState<payload | null>(null);
   const [user, setUser] = useState<User | null>(null);  
-  
+
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
@@ -35,12 +42,17 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
       });
 
       const data = await res.json();
+
       if (!res.ok) {
-        Alert.alert('Error', data.body.message);
+        Alert.alert('Error', data.message);
         return;
       }
 
-      await setItemAsync('token', data.body.token);
+      console.log("Esta es al estructura de iniciar sesion: ", data)
+
+      setPayload(data.user);
+
+      await setItemAsync('token', data.token);
 
       setUser({ name: "Test" });
       setSession(true);
@@ -62,10 +74,19 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
   const authVerification = async () => {
     setLoading(true);
     const token = await getItemAsync('token');
-  
-    console.log("Token", token);
-  
+    
     if (!token) {
+      setSession(false);
+      setLoading(false);
+      return;
+    }
+    
+    const decodedToken = decodeJWT(token);
+    const nowInSeconds = Math.floor(Date.now() / 1000);
+
+    const diffMinutes = (nowInSeconds - decodedToken.exp) / Math.floor(60);
+
+    if(diffMinutes > 10){
       setSession(false);
       setLoading(false);
       return;
@@ -79,7 +100,8 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
         },
       });
   
-      const data = await res.json();
+      const data = await res.json() as responseAuth;
+      setPayload(data.payload);
   
       if (!res.ok) {
         Alert.alert(res.status.toString(), data.message);
@@ -102,7 +124,7 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
     authVerification();
   }, []);
 
-  const contextData = { user, loading, session, signIn, signOut, authVerification };
+  const contextData = { user, loading, session, payload, signIn, signOut, authVerification };
 
   return (
     <AuthContext.Provider value={contextData}>
