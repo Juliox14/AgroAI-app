@@ -1,18 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { View, Image, Text } from "react-native";
-
-interface PlantaCardProps {
-    nombre: string;
-    nombreCientifico: string;
-    salud: number;
-    estres: number;
-    humedad: number;  
-    anomalias: number; 
-}
+import { PlantaCardProps } from "@/interfaces/components";
 
 const PlantaCard = ({nombre, nombreCientifico, salud = 40, estres = 10, humedad = 25, anomalias = 90 }: PlantaCardProps) => {
     return (
-        <View className="px-6 py-4 rounded-xl bg-white shadow-md h-auto w-[350px] justify-center items-center">
+        <View className="mb-4 px-6 py-4 rounded-xl bg-white shadow-md h-auto w-full justify-center items-center">
             <View className="flex-row w-full px-4 py-2 pb-4 border-b border-b-gray-400">
                 <Image source={require("@/assets/images/aloe.png")} className="w-20 h-20 mr-4 rounded-full border border-gray-400" />
                 <View className="flex-1 justify-center">

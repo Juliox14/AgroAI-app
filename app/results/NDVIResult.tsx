@@ -6,13 +6,12 @@ import NDVIPrueba from '@/components/NDVIPrueba';
 export default function NDVIResult() {
   const { stats, image } = useLocalSearchParams();
 
-  // const parsedStats = JSON.parse(stats as string);
-  // const base64 = image as string;
+  const parsedStats = JSON.parse(stats as string);
+  const base64 = image as string;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {/* <NDVIResultComponent stats={parsedStats} imageBase64={base64} /> */}
-      <NDVIPrueba />
+      <NDVIResultComponent stats={parsedStats} imageBase64={base64} />
     </SafeAreaView>
   );
 }

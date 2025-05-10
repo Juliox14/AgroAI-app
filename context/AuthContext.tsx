@@ -48,8 +48,6 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
         return;
       }
 
-      console.log("Esta es al estructura de iniciar sesion: ", data)
-
       setPayload(data.user);
 
       await setItemAsync('token', data.token);

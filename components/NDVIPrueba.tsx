@@ -1,25 +1,17 @@
 // Types
-import { plantCard } from '@/types/auth';
+import { responseExpediente } from '@/interfaces/response.general';
+import { expediente } from "@/types/general";
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Alert, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
-import { responsePlants } from '@/interfaces/response.general';
-
-interface Props {
-  stats: {
-    healthy_percentage: number;
-    stressed_percentage: number;
-    dry_percentage: number;
-    anomaly_percentage: number;
-  };
-}
+import PlantaCard from './PlantaCard';
 
 export default function NDVIPrueba() {
   const [modalVisible, setModalVisible] = useState(false);
-  const [plants, setPlants] = useState<plantCard[]>([]);
+  const [plants, setPlants] = useState<expediente[] | undefined>(undefined);
   const router = useRouter();
   const { payload } = useAuth();
 
@@ -32,14 +24,14 @@ export default function NDVIPrueba() {
         }
       });
 
-      const data = await res.json() as responsePlants;
-      console.log(data);
+      const responseJSON = await res.json() as responseExpediente;
+      responseJSON.data?.map((expediente) => {
+        setPlants(prev => ([...prev || [], expediente ]))
+      })
       if (!res.ok) {
-        Alert.alert('Error', data.message);
+        Alert.alert('Error', responseJSON.message);
         return;
       }
-
-      setPlants(data.data);
     }
 
     fetchPlants();
@@ -47,18 +39,14 @@ export default function NDVIPrueba() {
 
   const handleDecision = (index: number) => {
       if(index === 0){
-        console.log(payload?.id);  
+        // console.log(plants);  si quieres ver el objeto
         setModalVisible(true);
       }else if(index === 1){
-        console.log(payload);
+        // console.log(payload); Es el id del usuario
       }else if(index === 2){
         return router.push('/(tabs)')
       }
   }
-
-  useEffect(() => {
-    console.log("Variable", plants);
-  }, [plants]);
 
   return (
     <View className="flex-1 p-[22px] bg-white">
@@ -84,19 +72,36 @@ export default function NDVIPrueba() {
             visible={modalVisible}
             onRequestClose={() => setModalVisible(false)}>
             <View className="flex-1 justify-center items-center bg-transparent bg-opacity-50">
-              <View className="bg-white rounded-2xl p-6 w-4/5 shadow-lg relative">
-                <TouchableOpacity 
+              <View className="bg-white rounded-2xl w-[90%] h-[85%] shadow-lg relative overflow-y-auto">
+                <ScrollView className='p-6'>
+                  <TouchableOpacity 
                   className="absolute right-3 top-3 w-8 h-8 rounded-full items-center justify-center"
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Ionicons name="close-outline" size={24} color="black" />
-                </TouchableOpacity>
-                
-                <View className="mt-4">
-                  {!plants && (
-                    <Text className="text-lg text-center font-medium mb-4">No hay plantas para mostrar</Text>
-                  )}
-                </View>
+                  onPress={() => setModalVisible(false)}>
+                    <Ionicons name="close-outline" size={24} color="black" />
+                  </TouchableOpacity>
+                  
+                  <View className="mt-4">
+                    {!plants && (
+                      <Text className="text-lg text-center font-medium mb-4">No hay plantas para mostrar</Text>
+                    )}
+                    <Text className="text-2xl text-center font-semibold mb-4">Elije tu planta</Text>
+                    {plants && (
+                      <View className='flex gap-6'>
+                        {plants.map(((plant, index) => (
+                          <PlantaCard
+                            key={index} 
+                            nombre={plant.planta.nombre}
+                            nombreCientifico={plant.planta.nombre_cientifico}
+                            salud={50}
+                            estres={50}
+                            humedad={50}
+                            anomalias={50}
+                          />
+                        )))}
+                      </View>
+                    )}
+                  </View>
+                </ScrollView>
               </View>
             </View>
           </Modal>

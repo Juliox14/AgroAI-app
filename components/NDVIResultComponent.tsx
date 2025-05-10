@@ -1,55 +1,43 @@
-import React, { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+// types
+import { expediente } from "@/types/general";
+import { responseExpediente } from '@/interfaces/response.general';
+
+// Global variables
+import { useAuth } from '@/context/AuthContext';
+
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Pressable } from 'react-native';
 import Result from './Result';
 import ZoomableImage from './ZoomableImage';
-import { useAuth } from '@/context/AuthContext';
+import SettingsResults from './SettingsResults';
+import { NDVIResultComponentProps } from "@/interfaces/components";
 
-interface Props {
-  stats: {
-    healthy_percentage: number;
-    stressed_percentage: number;
-    dry_percentage: number;
-    anomaly_percentage: number;
-  };
-  imageBase64: string;
-}
-
-export default function NDVIResultComponent({ stats, imageBase64 }: Props) {
+export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultComponentProps) {
   const uri = `data:image/jpeg;base64,${imageBase64}`;
-
+  const [plants, setPlants] = useState<expediente[] | undefined>(undefined);
   const { payload } = useAuth();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [plants, setPlants] = useState([]);
-  const router = useRouter();
 
-  const handleDecision = (index: number) => {
-    if(index === 0){
-
-      async() => {
+  useEffect(() => {
+      const fetchPlants = async () => {
         const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/plants/${payload?.id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           }
         });
-
-        const data = await res.json();
+  
+        const responseJSON = await res.json() as responseExpediente;
+        responseJSON.data?.map((expediente) => {
+          setPlants(prev => ([...prev || [], expediente ]))
+        })
         if (!res.ok) {
-          Alert.alert('Error', data.body.message);
+          Alert.alert('Error', responseJSON.message);
           return;
         }
-
-        setPlants(data);
       }
-      setModalVisible(true);
-    }else if(index === 1){
-
-    }else if(index === 2){
-      return router.push('/(tabs)')
-    }
-  }
+  
+      fetchPlants();
+    }, [])
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -89,39 +77,7 @@ export default function NDVIResultComponent({ stats, imageBase64 }: Props) {
         />
       </View>
       
-      <View className='flex gap-6'>
-        <Text className='text-2xl text-center text-shadow-sky-300'>¿Qué deseas hacer con tus datos?</Text>
-        <View className="gap-4">
-          <TouchableOpacity onPress={() => {handleDecision(0)}} className="bg-gray-50 h-14 px-4 rounded-xl flex flex-row items-center">
-            <Ionicons name="bookmark-outline" size={24} color="black" />
-            <Text className="font-semibold ml-2">Insertar datos en un expediente existente</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {handleDecision(1)}} className="bg-gray-50 h-14 px-4 rounded-xl flex flex-row items-center">
-            <Ionicons name="folder-outline" size={24} color="black" />
-            <Text className="font-semibold ml-2">Crear un nuevo expediente</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {handleDecision(2)}} className="bg-gray-50 h-14 px-4 rounded-xl flex flex-row items-center">
-            <Ionicons name="ban-outline" size={24} color="black" />
-            <Text className="font-semibold ml-2">No guardar los datos</Text>
-          </TouchableOpacity>
-
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => setModalVisible(false)} // para Android back
-          >
-            <View style={styles.overlay}>
-              <View style={styles.modalView}>
-                <Text style={styles.modalText}>¡Hola! Soy un modal</Text>
-                <Pressable style={styles.buttonClose} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.textStyle}>Cerrar</Text>
-                </Pressable>
-              </View>
-            </View>
-          </Modal>
-        </View>
-      </View>
+      <SettingsResults plants={plants}/>
     </ScrollView>
   );
 }

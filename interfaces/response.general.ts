@@ -1,6 +1,6 @@
-import { plantCard } from "@/types/auth"
+import { expediente } from "@/types/general";
 
-export interface responsePlants {
-  message: string,
-  data: plantCard[]
+export interface responseExpediente {
+  message?: string,
+  data?: expediente[],
 }
