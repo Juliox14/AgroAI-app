@@ -4,7 +4,7 @@ import { payload } from "@/types/auth";
 
 import { useContext, createContext, useState, useEffect } from "react";
 import { SafeAreaView, View, ActivityIndicator, Alert } from "react-native";
-import { getItemAsync, setItemAsync } from "expo-secure-store";
+import { getItemAsync, setItemAsync, deleteItemAsync } from "expo-secure-store";
 import { decodeJWT } from "@/utils/JWT";
 
 type User = {
@@ -68,7 +68,17 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
   };
 
   const signOut = async () => {
-
+    setLoading(true);
+    try {
+      await deleteItemAsync('token');
+      setUser(null);
+      setSession(false);
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      Alert.alert('Error', 'No se pudo cerrar sesión. Intenta de nuevo más tarde.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const authVerification = async () => {

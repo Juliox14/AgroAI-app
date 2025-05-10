@@ -1,25 +1,36 @@
-// app/(tabs)/ajustes/index.tsx
-
-import React, { useState } from 'react';
-import {
-    SafeAreaView,
-    ScrollView,
-    View,
-    Text,
-    Switch,
-    TouchableOpacity,
-    StyleSheet,
-    Alert,
-    Share,
-    Linking
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, ScrollView, View, Text, Switch, TouchableOpacity, StyleSheet, Alert, Share, Linking } from 'react-native';
+import { normalizarEstado } from '@/utils/normalizarEstado';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
+import * as Location from 'expo-location';
+import LocationHeader from '@/components/home/LocationHeader';
 
 export default function ConfiguracionScreen() {
     const [notificaciones, setNotificaciones] = useState(false);
     const [modoOscuro, setModoOscuro] = useState(false);
-    const { signOut } = useAuth(); // asumiendo que tienes un contexto con signOut
+    const [locationName, setLocationName] = useState('Cargando ubicación...');
+    const { signOut } = useAuth();
+
+    useEffect(() => {
+        (async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permiso denegado', 'Se requiere ubicación.');
+                return;
+            }
+            const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+            const [place] = await Location.reverseGeocodeAsync(loc.coords);
+
+            // Abreviatura → nombre completo
+            const rawState = place.region ?? '';
+            const fullState = normalizarEstado(rawState);
+
+            const mun = place.city || place.district || place.subregion || '';
+
+            setLocationName(`${mun || '—'}, ${fullState || '—'}`);
+        })();
+    }, []);
 
     const handleRateApp = () => {
         const url = 'market://details?id=com.tuapp';
@@ -58,9 +69,10 @@ export default function ConfiguracionScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <LocationHeader locationName={locationName} />
             <ScrollView contentContainerStyle={styles.content}>
 
-                {/* Notificaciones */}
+                {/* Notificaciones
                 <View style={styles.item}>
                     <Ionicons name="notifications-outline" size={24} color="#333" />
                     <Text style={styles.label}>Notificaciones</Text>
@@ -68,7 +80,7 @@ export default function ConfiguracionScreen() {
                         value={notificaciones}
                         onValueChange={setNotificaciones}
                     />
-                </View>
+                </View> */}
 
                 {/* Modo oscuro */}
                 <View style={styles.item}>
