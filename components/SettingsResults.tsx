@@ -15,10 +15,10 @@ export default function SettingsResults({plants}:SettingsresultsProps) {
 
   const handleDecision = (index: number) => {
       if(index === 0){
-        console.log(plants);  
+        // console.log(plants);  Si quieres ver el objeto de plantas
         setModalVisible(true);
       }else if(index === 1){
-
+        
       }else if(index === 2){
         return router.push('/(tabs)')
       }
