@@ -6,7 +6,7 @@ import PlantaCard from './PlantaCard';
 import RectangleRounded from './RectagleRounded';
 import { SettingsresultsProps } from "@/interfaces/components";
 
-export default function SettingsResults({ plants, stats, imageBase64, payload }:SettingsresultsProps) {
+export default function SettingsResults({ expedientes, stats, imageBase64, payload }:SettingsresultsProps) {
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
 
@@ -21,19 +21,20 @@ export default function SettingsResults({ plants, stats, imageBase64, payload }:
   }
 
   const handleSubmitResults = async(id_expediente: number) => {
-    const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/expediente`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({  })
-    });
+    // const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/expediente`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({  })
+    // });
 
-    const responseJSON = await res.json();
-    if (!res.ok) {
-      Alert.alert('Error', responseJSON.message);
-      return;
-    }
+    // const responseJSON = await res.json();
+    // if (!res.ok) {
+    //   Alert.alert('Error', responseJSON.message);
+    //   return;
+    // }
+    console.log("ID Expediente", id_expediente);
   }
 
   return (
@@ -59,24 +60,25 @@ export default function SettingsResults({ plants, stats, imageBase64, payload }:
                 </TouchableOpacity>
                 <ScrollView className="px-10 mt-10">
                   <View className="mt-4">
-                    {!plants && (
+                    {!expedientes && (
                       <Text className="text-lg text-center font-medium mb-4">No hay plantas para mostrar</Text>
                     )}
                     <Text className="text-2xl text-center font-semibold mb-4">Elije tu planta</Text>
-                      {plants && (
+                      {expedientes && (
                         <View className='flex gap-2'>
-                          {plants.map(((plant) => (
+                          {expedientes.map((expediente) => (
                             <PlantaCard 
-                              key={plant.id_expediente}
-                              nombre={plant.planta.nombre}
-                              nombreCientifico={plant.planta.nombre_cientifico}
+                              key={expediente.id_expediente}
+                              idExpediente={expediente.id_expediente}
+                              nombre={expediente.planta.nombre}
+                              nombreCientifico={expediente.planta.nombre_cientifico}
                               salud={50}
                               estres={50}
                               humedad={50}
                               anomalias={50}
-                              handleAction={() => handleSubmitResults(plant.id_expediente)}
+                              handleAction={() => handleSubmitResults(expediente.id_expediente)}
                             />
-                          )))}
+                          ))}
                         </View>
                       )}
                   </View>

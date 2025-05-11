@@ -14,12 +14,12 @@ import { NDVIResultComponentProps } from "@/interfaces/components";
 
 export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultComponentProps) {
   const uri = `data:image/jpeg;base64,${imageBase64}`;
-  const [plants, setPlants] = useState<expediente[] | undefined>(undefined);
+  const [expedientes, setExpedientes] = useState<expediente[] | undefined>(undefined);
   const { payload } = useAuth();
 
   useEffect(() => {
-      const fetchPlants = async () => {
-        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/plants/${payload?.id}`, {
+      const fetchExpedientes = async () => {
+        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/expedientes/${payload?.id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -27,14 +27,13 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
         });
   
         const responseJSON = await res.json() as responseExpediente;
-        setPlants(responseJSON.data);
+        setExpedientes(responseJSON.data);
         if (!res.ok) {
           Alert.alert('Error', responseJSON.message);
           return;
         }
       }
-  
-      fetchPlants();
+      fetchExpedientes();
     }, [])
 
   return (
@@ -75,7 +74,7 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
         />
       </View>
       
-      <SettingsResults plants={plants}/>
+      <SettingsResults expedientes={expedientes} payload={payload} stats={stats} imageBase64={imageBase64}/>
     </ScrollView>
   );
 }

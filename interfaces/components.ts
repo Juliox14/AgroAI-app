@@ -5,11 +5,12 @@ export interface PlantaCardProps {
   idExpediente: number;
   nombre: string;
   nombreCientifico: string;
-  uriImagen: string;
+  uriImagen?: string;
   salud: number;
   estres: number;
   humedad: number;
   anomalias: number;
+  handleAction: () => void;
 }
 
 export interface NDVIResultComponentProps {
@@ -30,7 +31,7 @@ export interface RectangleRoundedProps {
 
 export interface SettingsresultsProps{
   payload: payload | null,
-  plants: expediente[] | undefined,
+  expedientes: expediente[] | undefined,
   stats: {
     healthy_percentage: number,
     stressed_percentage: number,
