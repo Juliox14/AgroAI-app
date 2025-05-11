@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/context/AuthContext';
 
 type Imagen = {
   id_imagen: number;
@@ -35,8 +36,10 @@ type Expediente = {
 export default function Plantas() {
   const [expedientes, setExpedientes] = useState<Expediente[]>([]);
   const [loading, setLoading] = useState(true);
+  const { payload } = useAuth();
 
   useEffect(() => {
+    console.log(payload)
     const fetchExpedientes = async () => {
       try {
         const res = await fetch('http://localhost:3004/database/get/1');

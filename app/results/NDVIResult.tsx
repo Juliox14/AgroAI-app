@@ -1,7 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NDVIResultComponent from '@/components/NDVIResultComponent';
-import NDVIPrueba from '@/components/NDVIPrueba';
 
 export default function NDVIResult() {
   const { stats, image } = useLocalSearchParams();

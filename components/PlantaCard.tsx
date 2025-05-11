@@ -1,10 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { View, Image, Text } from "react-native";
+import { View, Image, Text, Touchable, TouchableOpacity } from "react-native";
 import { PlantaCardProps } from "@/interfaces/components";
 
-const PlantaCard = ({nombre, nombreCientifico, salud = 40, estres = 10, humedad = 25, anomalias = 90 }: PlantaCardProps) => {
+const PlantaCard = ({ nombre, nombreCientifico, salud = 40, estres = 10, humedad = 25, anomalias = 90, handleAction }: PlantaCardProps) => {
     return (
-        <View className="mb-4 px-6 py-4 rounded-xl bg-white shadow-md h-auto w-full justify-center items-center">
+        <TouchableOpacity className="mb-4 px-6 py-4 rounded-xl bg-white shadow-md h-auto w-full justify-center items-center"
+            onPress={handleAction && (() => handleAction())}>
             <View className="flex-row w-full px-4 py-2 pb-4 border-b border-b-gray-400">
                 <Image source={require("@/assets/images/aloe.png")} className="w-20 h-20 mr-4 rounded-full border border-gray-400" />
                 <View className="flex-1 justify-center">
@@ -69,7 +70,7 @@ const PlantaCard = ({nombre, nombreCientifico, salud = 40, estres = 10, humedad 
                     </Text>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 
