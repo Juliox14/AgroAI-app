@@ -46,7 +46,6 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
       <ZoomableImage
         source={{ uri }}
         thumbnailStyle={styles.previewImage}
-      /* opcional puedes pasar modalImageStyle si quieres bordes o márgenes */
       />
 
       <View className='flex-1 gap-6'>

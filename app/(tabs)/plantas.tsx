@@ -1,6 +1,8 @@
+import PlantaCard from '@/components/PlantaCard';
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/context/AuthContext';
 
 type Imagen = {
   id_imagen: number;
@@ -35,11 +37,12 @@ type Expediente = {
 export default function Plantas() {
   const [expedientes, setExpedientes] = useState<Expediente[]>([]);
   const [loading, setLoading] = useState(true);
+  const { payload } = useAuth();
 
   useEffect(() => {
     const fetchExpedientes = async () => {
       try {
-        const res = await fetch('http://localhost:3004/database/get/1');
+        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3004/database/get/8`);
         console.log(":", res);
         const json = await res.json();
         setExpedientes(json[0].obtener_expedientes_usuario);
@@ -49,7 +52,6 @@ export default function Plantas() {
         setLoading(false);
       }
     };
-
     fetchExpedientes();
   }, []);
 
@@ -62,12 +64,16 @@ export default function Plantas() {
         data={expedientes}
         keyExtractor={(item) => item.id_expediente.toString()}
         renderItem={({ item }) => (
-          <View className="bg-white rounded-xl mb-4 p-4 shadow">
-            <Image source={{ uri: item.planta.uri_imagen }} style={styles.image} />
-            <Text className="text-xl font-semibold mt-2">{item.planta.nombre}</Text>
-            <Text className="text-sm text-gray-600 italic">{item.planta.nombre_cientifico}</Text>
-            <Text className="text-xs text-gray-400 mt-1">Expediente #{item.id_expediente}</Text>
-          </View>
+          <PlantaCard
+            idExpediente={item.id_expediente}
+            nombre={item.planta.nombre}
+            nombreCientifico={item.planta.nombre_cientifico}
+            uriImagen={item.planta.uri_imagen}
+            salud={item.registros ? item.registros[0].healthy_percentage : 0}
+            estres={item.registros ? item.registros[0].stressed_percentage : 0}
+            humedad={item.registros ? item.registros[0].dry_percentage : 0}
+            anomalias={item.registros ? item.registros[0].anomaly_percentage : 0}
+          />
         )}
       />
     </SafeAreaView>

@@ -1,12 +1,14 @@
 import { expediente } from "@/types/general";
 
 export interface PlantaCardProps {
-    nombre: string;
-    nombreCientifico: string;
-    salud: number;
-    estres: number;
-    humedad: number;  
-    anomalias: number; 
+  idExpediente: number;
+  nombre: string;
+  nombreCientifico: string;
+  uriImagen: string;
+  salud: number;
+  estres: number;
+  humedad: number;
+  anomalias: number;
 }
 
 export interface NDVIResultComponentProps {
@@ -26,6 +28,6 @@ export interface RectangleRoundedProps {
   text: string,
 }
 
-export interface SettingsresultsProps{
+export interface SettingsresultsProps {
   plants: expediente[] | undefined;
 }
