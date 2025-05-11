@@ -1,6 +1,6 @@
 // types
 import { responseAuth } from "@/interfaces/response.auth";
-import { payload, User, AuthContextType } from "@/types/auth";
+import { payload, AuthContextType } from "@/types/auth";
 
 import { useContext, createContext, useState, useEffect } from "react";
 import { SafeAreaView, View, ActivityIndicator, Alert } from "react-native";
@@ -13,7 +13,6 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState(false);
   const [payload, setPayload] = useState<payload | null>(null);
-  const [user, setUser] = useState<User | null>(null);  
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
@@ -37,7 +36,6 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
 
       await setItemAsync('token', data.token);
 
-      setUser({ name: "Test" });
       setSession(true);
       setLoading(false);
 
@@ -54,7 +52,6 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
     setLoading(true);
     try {
       await deleteItemAsync('token');
-      setUser(null);
       setSession(false);
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -117,7 +114,7 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
     authVerification();
   }, []);
 
-  const contextData = { user, loading, session, payload, signIn, signOut, authVerification };
+  const contextData = { loading, session, payload, signIn, signOut, authVerification };
 
   return (
     <AuthContext.Provider value={contextData}>

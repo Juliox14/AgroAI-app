@@ -27,9 +27,7 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
         });
   
         const responseJSON = await res.json() as responseExpediente;
-        responseJSON.data?.map((expediente) => {
-          setPlants(prev => ([...prev || [], expediente ]))
-        })
+        setPlants(responseJSON.data);
         if (!res.ok) {
           Alert.alert('Error', responseJSON.message);
           return;

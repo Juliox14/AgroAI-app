@@ -1,9 +1,4 @@
-export type User = {
-  name: string,
-};
-
 export type AuthContextType = {
-  user: User | null;
   loading: boolean;
   session: boolean;
   payload: payload | null;

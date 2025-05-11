@@ -21,7 +21,7 @@ export default function SettingsResults({ plants, stats, imageBase64, payload }:
   }
 
   const handleSubmitResults = async(id_expediente: number) => {
-    const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/expediente/${id_expediente}/ndvi`, {
+    const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/expediente`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
