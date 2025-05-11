@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { View, Image, Text } from "react-native";
+import { View, Image, Text, Touchable, TouchableOpacity } from "react-native";
 import { PlantaCardProps } from "@/interfaces/components";
 import { Link } from "expo-router";
 

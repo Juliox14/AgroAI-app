@@ -1,3 +1,4 @@
+import { payload } from "@/types/auth";
 import { expediente } from "@/types/general";
 
 export interface PlantaCardProps {
@@ -22,12 +23,19 @@ export interface NDVIResultComponentProps {
 }
 
 export interface RectangleRoundedProps {
-  handleDecision: (index: number) => void,
-  index: number,
+  handleDecision: () => void,
   icon: string,
-  text: string,
+  text: string
 }
 
-export interface SettingsresultsProps {
-  plants: expediente[] | undefined;
+export interface SettingsresultsProps{
+  payload: payload | null,
+  plants: expediente[] | undefined,
+  stats: {
+    healthy_percentage: number,
+    stressed_percentage: number,
+    dry_percentage: number,
+    anomaly_percentage: number,
+  }
+  imageBase64: string
 }

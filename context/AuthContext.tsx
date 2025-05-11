@@ -1,26 +1,11 @@
 // types
 import { responseAuth } from "@/interfaces/response.auth";
-import { payload } from "@/types/auth";
+import { payload, User, AuthContextType } from "@/types/auth";
 
 import { useContext, createContext, useState, useEffect } from "react";
 import { SafeAreaView, View, ActivityIndicator, Alert } from "react-native";
 import { getItemAsync, setItemAsync, deleteItemAsync } from "expo-secure-store";
 import { decodeJWT } from "@/utils/JWT";
-
-type User = {
-  name: string;
-};
-
-
-type AuthContextType = {
-  user: User | null;
-  loading: boolean;
-  session: boolean;
-  payload: payload | null;
-  signIn: (email: string, password: string) => Promise<Response | undefined>;
-  signOut: () => Promise<void>;
-  authVerification: () => Promise<void>;
-};
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 

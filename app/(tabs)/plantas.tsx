@@ -40,6 +40,7 @@ export default function Plantas() {
   const { payload } = useAuth();
 
   useEffect(() => {
+    console.log(payload)
     const fetchExpedientes = async () => {
       try {
         const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3004/database/get/8`);
