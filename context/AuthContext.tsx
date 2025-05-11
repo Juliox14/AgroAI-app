@@ -33,7 +33,7 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
       }
 
       setPayload(data.user);
-
+      console.log("Payload", data.user);
       await setItemAsync('token', data.token);
 
       setSession(true);

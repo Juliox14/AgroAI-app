@@ -31,6 +31,13 @@ export default function RootLayout() {
             headerShown: false,
           }}
         />
+
+        <Stack.Screen
+          name="expediente/[id]"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </AuthProvider>
   );

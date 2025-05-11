@@ -111,21 +111,6 @@ export default function LayoutTabs() {
                             )
                         }}
                     />
-    
-                    <Tabs.Screen
-                        name="expediente"
-                        options={{
-                            title: 'expedientes',
-                            headerShown: false,
-                            tabBarIcon: ({ focused }) => (
-                                <Ionicons
-                                    name="settings-outline"
-                                    size={28}
-                                    color={focused ? '#4aad8e' : '#666'}
-                                />
-                            )
-                        }}
-                    />
                 </Tabs>
             ): (
                 <Redirect href="/login" />
