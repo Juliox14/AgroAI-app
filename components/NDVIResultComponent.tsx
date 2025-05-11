@@ -6,7 +6,7 @@ import { responseExpediente } from '@/interfaces/response.general';
 import { useAuth } from '@/context/AuthContext';
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Pressable } from 'react-native';
 import Result from './Result';
 import ZoomableImage from './ZoomableImage';
 import SettingsResults from './SettingsResults';
@@ -35,15 +35,18 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
           return;
         }
       }
+  
       fetchPlants();
     }, [])
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Resultados del análisis NDVI</Text>
+
       <ZoomableImage
         source={{ uri }}
         thumbnailStyle={styles.previewImage}
+      /* opcional puedes pasar modalImageStyle si quieres bordes o márgenes */
       />
 
       <View className='flex-1 gap-6'>
@@ -52,6 +55,7 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
           value={stats.healthy_percentage}
           label="Porcentaje de vegetación sana"
         />
+
 
         <Result
           nameIcon="water"
@@ -65,14 +69,15 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
           label="Porcentaje de vegetación seca"
         />
 
+
         <Result
           nameIcon="alert-circle"
           value={stats.anomaly_percentage}
           label="Porcentaje de anomalías"
         />
       </View>
-
-      <SettingsResults plants={plants} stats={stats} imageBase64={imageBase64} payload={payload}/>
+      
+      <SettingsResults plants={plants}/>
     </ScrollView>
   );
 }

@@ -1,6 +1,6 @@
 import PlantaCard from '@/components/PlantaCard';
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 
@@ -43,7 +43,7 @@ export default function Plantas() {
     console.log(payload)
     const fetchExpedientes = async () => {
       try {
-        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3004/database/get/8`);
+        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3004/database/get/${payload?.id}`);
         console.log(":", res);
         const json = await res.json();
         setExpedientes(json[0].obtener_expedientes_usuario);
@@ -59,29 +59,42 @@ export default function Plantas() {
   if (loading) return <ActivityIndicator className="mt-10" size="large" color="#00cc99" />;
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100 p-4">
-      <Text className="text-2xl font-bold mb-4 text-center">Mis Plantas</Text>
-      <FlatList
-        data={expedientes}
-        keyExtractor={(item) => item.id_expediente.toString()}
-        renderItem={({ item }) => (
-          <PlantaCard
-            idExpediente={item.id_expediente}
-            nombre={item.planta.nombre}
-            nombreCientifico={item.planta.nombre_cientifico}
-            uriImagen={item.planta.uri_imagen}
-            salud={item.registros ? item.registros[0].healthy_percentage : 0}
-            estres={item.registros ? item.registros[0].stressed_percentage : 0}
-            humedad={item.registros ? item.registros[0].dry_percentage : 0}
-            anomalias={item.registros ? item.registros[0].anomaly_percentage : 0}
-          />
+    <ScrollView>
+      <SafeAreaView className="flex-1 p-6">
+        <Text className="text-2xl font-bold mb-4 text-center">Mis Plantas</Text>
+
+        {expedientes && (
+          <View className="flex-1 gap-6 mt-4">
+            {expedientes.map((item) => (
+              
+              <PlantaCard
+                idExpediente={item.id_expediente}
+                nombre={item.planta.nombre}
+                nombreCientifico={item.planta.nombre_cientifico}
+                uriImagen={item.planta.uri_imagen}
+                salud={item.registros ? item.registros[0].healthy_percentage : 0}
+                estres={item.registros ? item.registros[0].stressed_percentage : 0}
+                humedad={item.registros ? item.registros[0].dry_percentage : 0}
+                anomalias={item.registros ? item.registros[0].anomaly_percentage : 0}
+              />
+            ))}
+          </View>
         )}
-      />
-    </SafeAreaView>
-  );
+
+      </SafeAreaView>
+    </ScrollView>
+
+  )
 }
 
 const styles = StyleSheet.create({
+  flatList: {
+    flex: 1,
+    paddingBottom: 20,
+    backgroundColor: '#0044000',
+    width: '100%',
+    gap: 12,
+  },
   image: {
     width: '100%',
     height: 180,
