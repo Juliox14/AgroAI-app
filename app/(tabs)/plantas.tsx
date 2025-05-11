@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'expo-router';
 
 type Imagen = {
   id_imagen: number;
@@ -38,6 +39,7 @@ export default function Plantas() {
   const [expedientes, setExpedientes] = useState<Expediente[]>([]);
   const [loading, setLoading] = useState(true);
   const { payload } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     console.log(payload)
@@ -66,9 +68,8 @@ export default function Plantas() {
         {expedientes && (
           <View className="flex-1 gap-6 mt-4">
             {expedientes.map((item) => (
-              
+
               <PlantaCard
-                idExpediente={item.id_expediente}
                 nombre={item.planta.nombre}
                 nombreCientifico={item.planta.nombre_cientifico}
                 uriImagen={item.planta.uri_imagen}
@@ -76,6 +77,12 @@ export default function Plantas() {
                 estres={item.registros ? item.registros[0].stressed_percentage : 0}
                 humedad={item.registros ? item.registros[0].dry_percentage : 0}
                 anomalias={item.registros ? item.registros[0].anomaly_percentage : 0}
+                handleAction={() => {
+                  router.push({
+                    pathname: "/expediente/[id]",
+                    params: { id: item.id_expediente },
+                  });
+                }}
               />
             ))}
           </View>

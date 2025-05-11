@@ -2,7 +2,6 @@ import { payload } from "@/types/auth";
 import { expediente } from "@/types/general";
 
 export interface PlantaCardProps {
-  idExpediente: number;
   nombre: string;
   nombreCientifico: string;
   uriImagen?: string;

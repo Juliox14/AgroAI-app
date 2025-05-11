@@ -3,12 +3,8 @@ import { View, Image, Text, Touchable, TouchableOpacity } from "react-native";
 import { PlantaCardProps } from "@/interfaces/components";
 import { Link } from "expo-router";
 
-const PlantaCard = ({ nombre, nombreCientifico, salud = 40, estres = 10, humedad = 25, anomalias = 90, uriImagen, idExpediente, handleAction }: PlantaCardProps) => {
+const PlantaCard = ({ nombre, nombreCientifico, salud = 40, estres = 10, humedad = 25, anomalias = 90, uriImagen, handleAction }: PlantaCardProps) => {
     return (
-        // <Link href={{
-        //     pathname: "/expediente/[id]",
-        //     params: { id: idExpediente },
-        // }}>
         <TouchableOpacity onPress={handleAction} className="mb-4 px-6 py-4 rounded-xl bg-white shadow-md h-auto w-full justify-center items-center">
             <View className="flex-row w-full px-4 py-2 pb-4 border-b border-b-gray-400">
                 <Image source={uriImagen ? { uri: uriImagen } : require("@/assets/images/aloe.png")} className="w-20 h-20 mr-4 rounded-full border border-gray-400" />
