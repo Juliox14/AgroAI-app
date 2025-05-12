@@ -1,16 +1,19 @@
+// React
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+
 // types
+import { NDVIResultComponentProps } from "@/interfaces/components";
 import { expediente } from "@/types/general";
 import { responseExpediente } from '@/interfaces/response.general';
 
-// Global variables
-import { useAuth } from '@/context/AuthContext';
-
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Pressable } from 'react-native';
+// Components
 import Result from './Result';
 import ZoomableImage from './ZoomableImage';
 import SettingsResults from './SettingsResults';
-import { NDVIResultComponentProps } from "@/interfaces/components";
+
+// Global variables
+import { useAuth } from '@/context/AuthContext';
 
 export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultComponentProps) {
   const uri = `data:image/jpeg;base64,${imageBase64}`;
@@ -19,7 +22,7 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
 
   useEffect(() => {
       const fetchExpedientes = async () => {
-        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/expedientes/${payload?.id}`, {
+        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/database/getVistaExpedientes/${payload?.id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

@@ -1,10 +1,20 @@
+// React
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+
+// Types
+import { SettingsresultsProps } from "@/interfaces/components";
+
+// Components
 import PlantaCard from './PlantaCard';
 import RectangleRounded from './RectagleRounded';
-import { SettingsresultsProps } from "@/interfaces/components";
+
+// Icons 
+import { Ionicons } from '@expo/vector-icons';
+
+// Functions
+import { createFileFromBase64 } from '@/utils/general';
 
 export default function SettingsResults({ expedientes, stats, imageBase64, payload }:SettingsresultsProps) {
   const [modalVisible, setModalVisible] = useState(false);
@@ -21,20 +31,39 @@ export default function SettingsResults({ expedientes, stats, imageBase64, paylo
   }
 
   const handleSubmitResults = async(id_expediente: number) => {
-    // const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/expediente`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({  })
-    // });
+    if (!expedientes)
+      return;
+  
+    const expediente = expedientes.find((expediente) => expediente.id_expediente === id_expediente);
+    if (!expediente) {
+      Alert.alert('Error', "No se encontró el expediente seleccionado");
+      return;
+    }
 
-    // const responseJSON = await res.json();
-    // if (!res.ok) {
-    //   Alert.alert('Error', responseJSON.message);
-    //   return;
-    // }
-    console.log("ID Expediente", id_expediente);
+    try{
+      const blob = await createFileFromBase64(imageBase64);
+      const formData = new FormData();
+
+      console.log("ID Expediente", id_expediente);
+      formData.append("file", blob as unknown as Blob);
+      formData.append("nombre", expediente.planta.name);
+      formData.append("id_expediente", expediente.id_expediente.toString());
+      formData.append("healthy", stats.healthy_percentage.toString());
+      formData.append("stressed", stats.stressed_percentage.toString());
+      formData.append("dry", stats.dry_percentage.toString());
+      formData.append("anomaly", stats.anomaly_percentage.toString());
+
+      console.log("hola");
+      const response = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/database/registrar`, {
+        method: 'POST',
+        body: formData
+      });
+      console.log("Response", response);
+    }catch (error) {
+      console.error("Error al llamar al microservicio:", error);
+      Alert.alert('Error', "Error al comunicarse con el microservicio");
+      return;
+    }
   }
 
   return (
@@ -69,13 +98,12 @@ export default function SettingsResults({ expedientes, stats, imageBase64, paylo
                           {expedientes.map((expediente) => (
                             <PlantaCard 
                               key={expediente.id_expediente}
-                              idExpediente={expediente.id_expediente}
-                              nombre={expediente.planta.nombre}
+                              nombre={expediente.planta.name}
                               nombreCientifico={expediente.planta.nombre_cientifico}
-                              salud={50}
-                              estres={50}
-                              humedad={50}
-                              anomalias={50}
+                              salud={expediente.ultimo_registro.healthy}
+                              estres={expediente.ultimo_registro.stressed}
+                              humedad={expediente.ultimo_registro.dry}
+                              anomalias={expediente.ultimo_registro.anomaly}
                               handleAction={() => handleSubmitResults(expediente.id_expediente)}
                             />
                           ))}
