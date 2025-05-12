@@ -121,7 +121,7 @@ const AuthProvider = ( { children }:{children: React.ReactNode} ) => {
       {loading ?( 
         <SafeAreaView className="flex-1">
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#3b82f6" />
+            <ActivityIndicator size="large" color="#16a34a" />
           </View>
         </SafeAreaView> 
       ) : (

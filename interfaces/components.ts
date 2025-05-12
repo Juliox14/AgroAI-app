@@ -1,6 +1,7 @@
 import Expediente from "@/app/expediente/[id]";
 import { payload } from "@/types/auth";
-import { expediente, registro } from "@/types/general";
+import { expedienteVista, registro } from "@/types/general";
+import { expediente, plant } from "@/types/general";
 
 export interface PlantaCardProps {
   nombre: string;
@@ -29,8 +30,9 @@ export interface RectangleRoundedProps {
   text: string
 }
 
-export interface SettingsresultsProps{
+export interface SettingsresultsProps {
   payload: payload | null,
+  plants: plant[] | undefined,
   expedientes: expediente[] | undefined,
   stats: {
     healthy_percentage: number,
@@ -42,9 +44,14 @@ export interface SettingsresultsProps{
 }
 
 export interface ExpedienteComponentProps {
-  expediente: expediente;
+  expediente: expedienteVista;
 }
 
-export interface RegistroComponentProps{
+export interface RegistroComponentProps {
   registro: registro,
+}
+export interface CustomModalProps {
+  modalVisible: boolean,
+  setModalHidden: () => void,
+  children?: React.ReactNode
 }
