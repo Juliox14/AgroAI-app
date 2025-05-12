@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Image, Modal, Pressable, StyleSheet, View, ImageProps, Text } from 'react-native';
 
 interface ZoomableImageProps extends Omit<ImageProps, 'source'> {
-    source: ImageProps['source'];
+    source: ImageProps['source'] | { uri: string };
     thumbnailStyle?: ImageProps['style'];
     modalImageStyle?: ImageProps['style'];
 }
@@ -56,7 +56,7 @@ export default function ZoomableImage({ source, thumbnailStyle, modalImageStyle,
                     onPress={() => setVisible(false)}
                 >
                     <Image
-                        source={source}
+                        source={source as ImageProps['source']}
                         style={[styles.fullscreenImage, modalImageStyle]}
                         resizeMode="contain"
                     />

@@ -1,39 +1,11 @@
 import PlantaCard from '@/components/PlantaCard';
+import PlantaCardSkeleton from '@/components/Fallbacks/PlantaCardSkeleton';
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
-
-type Imagen = {
-  id_imagen: number;
-  uri_imagen: string;
-  nombre_imagen: string;
-};
-
-type Registro = {
-  id_registro: number;
-  fecha_registro: string;
-  healthy_percentage: number;
-  stressed_percentage: number;
-  dry_percentage: number;
-  anomaly_percentage: number;
-  imagenes: Imagen[];
-};
-
-type Planta = {
-  id_planta: number;
-  nombre: string;
-  nombre_cientifico: string;
-  uri_imagen: string;
-};
-
-type Expediente = {
-  id_expediente: number;
-  fecha_creacion: string;
-  planta: Planta;
-  registros: Registro[] | null;
-};
+import { Expediente } from '@/types/plantas';
 
 export default function Plantas() {
   const [expedientes, setExpedientes] = useState<Expediente[]>([]);
@@ -42,13 +14,11 @@ export default function Plantas() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log(payload)
     const fetchExpedientes = async () => {
       try {
-        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3004/database/get/${payload?.id}`);
-        console.log(":", res);
+        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/database/getVistaExpedientes/${payload?.id}`);
         const json = await res.json();
-        setExpedientes(json[0].obtener_expedientes_usuario);
+        setExpedientes(json.data[0].obtener_vista_expedientes);
       } catch (error) {
         console.error('Error al cargar datos:', error);
       } finally {
@@ -58,25 +28,29 @@ export default function Plantas() {
     fetchExpedientes();
   }, []);
 
-  if (loading) return <ActivityIndicator className="mt-10" size="large" color="#00cc99" />;
-
   return (
     <ScrollView>
       <SafeAreaView className="flex-1 p-6">
         <Text className="text-2xl font-bold mb-4 text-center">Mis Plantas</Text>
 
-        {expedientes && (
+        {loading ? (
           <View className="flex-1 gap-6 mt-4">
-            {expedientes.map((item) => (
-
+            {[...Array(3)].map((_, index) => (
+              <PlantaCardSkeleton key={`skeleton-${index}`} />
+            ))}
+          </View>
+        ) : (
+          <View className="flex-1 gap-6 mt-4">
+            {expedientes.map((item, id) => (
               <PlantaCard
-                nombre={item.planta.nombre}
+                key={id}
+                nombre={item.planta.name}
                 nombreCientifico={item.planta.nombre_cientifico}
                 uriImagen={item.planta.uri_imagen}
-                salud={item.registros ? item.registros[0].healthy_percentage : 0}
-                estres={item.registros ? item.registros[0].stressed_percentage : 0}
-                humedad={item.registros ? item.registros[0].dry_percentage : 0}
-                anomalias={item.registros ? item.registros[0].anomaly_percentage : 0}
+                salud={item.ultimo_registro ? item.ultimo_registro.healthy : 0}
+                estres={item.ultimo_registro ? item.ultimo_registro.stressed : 0}
+                humedad={item.ultimo_registro ? item.ultimo_registro.dry : 0}
+                anomalias={item.ultimo_registro ? item.ultimo_registro.anomaly : 0}
                 handleAction={() => {
                   router.push({
                     pathname: "/expediente/[id]",
@@ -87,24 +61,7 @@ export default function Plantas() {
             ))}
           </View>
         )}
-
       </SafeAreaView>
     </ScrollView>
-
-  )
-}
-
-const styles = StyleSheet.create({
-  flatList: {
-    flex: 1,
-    paddingBottom: 20,
-    backgroundColor: '#0044000',
-    width: '100%',
-    gap: 12,
-  },
-  image: {
-    width: '100%',
-    height: 180,
-    borderRadius: 12,
-  },
-});
+  );
+};

@@ -1,5 +1,6 @@
+import Expediente from "@/app/expediente/[id]";
 import { payload } from "@/types/auth";
-import { expediente } from "@/types/general";
+import { expediente, registro } from "@/types/general";
 
 export interface PlantaCardProps {
   nombre: string;
@@ -38,4 +39,12 @@ export interface SettingsresultsProps{
     anomaly_percentage: number,
   }
   imageBase64: string
+}
+
+export interface ExpedienteComponentProps {
+  expediente: expediente;
+}
+
+export interface RegistroComponentProps{
+  registro: registro,
 }

@@ -1,19 +1,32 @@
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ActivityIndicator, SafeAreaView } from 'react-native';
+import ExpedienteComponent from '../../components/expediente/ExpedienteComponent';
 
 export default function Expediente() {
     const { id } = useLocalSearchParams();
     const [expediente, setExpediente] = useState<any>(null);
-    // const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        if (!id) return;
 
-    
+        const fetchExpediente = async () => {
+            try {
+                const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/database/getVistaRegistros/${id}`);
+                const responseJSON = await res.json();
+                console.log("Respuesta del servidor:", responseJSON.expediente[0].obtener_registros);
+                setExpediente(responseJSON.expediente[0].obtener_registros);
+            } catch (err) {
+                console.error("Error en fetchExpediente:", err);
+            }
+        };
 
-    // if (loading) return <ActivityIndicator className="mt-10" size="large" color="#00cc99" />;
+        fetchExpediente();
+    }, [id]);
+
 
     return (
         <SafeAreaView className="flex-1 bg-gray-100 p-4">
-            <Text className="text-2xl font-bold mb-4">Expediente {id}</Text>
+            <ExpedienteComponent expediente={expediente} />
         </SafeAreaView>
     );
 }

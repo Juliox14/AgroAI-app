@@ -1,19 +1,26 @@
 export type expediente = {
   fecha_creacion: string,
   id_expediente: number,
+  uri_imagen_principal: string,
   planta: {
     id_planta: number,
-    nombre: string,
+    name: string,
     nombre_cientifico: string,
-    uri_imagen: string
   },
-  registros: {
-    anomaly_percentage: number,
-    dry_percentage: number,
-    fecha_registro: string,
-    healthy_percentage: number,
-    id_registro: number,
-    imagenes: [],
-    stressed_percentage: number,
-  }[]
+  registros: registro[],
+}
+
+export type registro = {
+  id_registro: number,
+  fecha_registro: string,
+  healthy: number,
+  stressed: number,
+  dry: number,
+  anomaly: number,
+  imagenes: {
+    uri: string,
+    key: string,
+    name: string,
+    fecha: string,
+  }[],
 }
