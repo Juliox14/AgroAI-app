@@ -1,5 +1,5 @@
 import { payload } from "@/types/auth";
-import { expediente } from "@/types/general";
+import { expediente, plant } from "@/types/general";
 
 export interface PlantaCardProps {
   nombre: string;
@@ -30,6 +30,7 @@ export interface RectangleRoundedProps {
 
 export interface SettingsresultsProps{
   payload: payload | null,
+  plants: plant[] | undefined,
   expedientes: expediente[] | undefined,
   stats: {
     healthy_percentage: number,
@@ -38,4 +39,10 @@ export interface SettingsresultsProps{
     anomaly_percentage: number,
   }
   imageBase64: string
+}
+
+export interface CustomModalProps {
+  modalVisible: boolean,
+  setModalHidden: () => void,
+  children?: React.ReactNode
 }

@@ -18,6 +18,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultComponentProps) {
   const uri = `data:image/jpeg;base64,${imageBase64}`;
   const [expedientes, setExpedientes] = useState<expediente[] | undefined>(undefined);
+  const [allPlants, setAllPlants] = useState();
   const { payload } = useAuth();
 
   useEffect(() => {
@@ -36,7 +37,25 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
           return;
         }
       }
+
+      const fetchAllPlants = async () => {
+        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/database/getAllPlants`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+  
+        const responseJSON = await res.json();
+        setAllPlants(responseJSON.data);
+        if (!res.ok) {
+          Alert.alert('Error', responseJSON.message);
+          return;
+        }
+      }
+
       fetchExpedientes();
+      fetchAllPlants();
     }, [])
 
   return (
@@ -77,7 +96,7 @@ export default function NDVIResultComponent({ stats, imageBase64 }: NDVIResultCo
         />
       </View>
       
-      <SettingsResults expedientes={expedientes} payload={payload} stats={stats} imageBase64={imageBase64}/>
+      <SettingsResults expedientes={expedientes} plants={allPlants} payload={payload} stats={stats} imageBase64={imageBase64}/>
     </ScrollView>
   );
 }
