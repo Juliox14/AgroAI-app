@@ -17,7 +17,7 @@ import { createFileFromBase64 } from '@/utils/general';
 
 export default function SettingsResults({ expedientes, plants, payload, stats, imageBase64 }:SettingsresultsProps) {
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedPlant, setSelectedPlant] = useState(plants ? plants[0].id_planta : 0);	
+  const [selectedPlant, setSelectedPlant] = useState(plants ? (plants[0].id_planta).toString() : "0");	
   const [modalForm, setModalForm] = useState(false);
   const router = useRouter();
 
@@ -78,7 +78,7 @@ export default function SettingsResults({ expedientes, plants, payload, stats, i
       return;
 
     console.log("ID Planta", selectedPlant);
-    const plant = plants?.find( p => p.id_planta === selectedPlant )
+    const plant = plants?.find( p => p.id_planta === parseInt(selectedPlant) )
 
     if (!plant) {
       Alert.alert('Error', "No se encontró la planta seleccionada");
