@@ -1,6 +1,6 @@
 // components/WeatherCard.tsx
-import React from 'react';
-import { View, Text, ActivityIndicator, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, Text, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DailyForecast, { ForecastItem } from './DailyForecast';
 
@@ -20,7 +20,7 @@ const emojiByDesc: emojiByDesc = {
     'Poco nuboso': '⛅️',
     'Cielo nublado': '☁️',
     'Medio nublado': '☁️',
-    'Lluvia aislada':'🌧️',
+    'Lluvia aislada': '🌧️',
     'Tormenta': '⛈️',
 };
 
@@ -63,20 +63,24 @@ const SkeletonLoader = () => {
     );
 };
 
+
 export default function WeatherCard({ loading, data }: Props) {
+    const [showDetails, setShowDetails] = useState(false);
+
     if (loading) {
         return <SkeletonLoader />;
     }
-    
+
     if (!data.length) {
-        return (
-            <SkeletonLoader />
-        );
+        return <SkeletonLoader />;
     }
 
-    // Usaremos el primer elemento como "hoy"
     const today = data[0];
     const emoji = emojiByDesc[today.desciel] || '❓';
+
+    const toggleDetails = () => {
+        setShowDetails(!showDetails);
+    };
 
     return (
         <View className="bg-white rounded-2xl p-6 mb-6 shadow">
@@ -107,16 +111,18 @@ export default function WeatherCard({ loading, data }: Props) {
                 </Text>
             </View>
 
-            {/* Detalles adicionales */}
-            <View className="flex-row justify-around mt-4">
-                {/* <View className="items-center">
+            {/* Botón para expandir/contraer detalles */}
+            
+
+            <View className="flex-row justify-around mt-4 animate-fade-in">
+                <View className="items-center">
                     <Text className="text-xs text-gray-600">Precipitación</Text>
                     <Text className="text-sm">☔ {today.probprec}%</Text>
                 </View>
                 <View className="items-center">
                     <Text className="text-xs text-gray-600">Lluvia acumulada</Text>
                     <Text className="text-sm">🌧️ {today.prec} mm</Text>
-                </View> */}
+                </View>
                 <View className="items-center">
                     <Text className="text-xs text-gray-600">Viento</Text>
                     <Text className="text-sm">🌬️ {today.velvien} km/h</Text>
@@ -126,9 +132,29 @@ export default function WeatherCard({ loading, data }: Props) {
                     <Text className="text-sm">☁️ {today.cc}%</Text>
                 </View>
             </View>
+            
+            <TouchableOpacity
+                onPress={toggleDetails}
+                className="flex-row items-center justify-center mt-4"
+                activeOpacity={0.7}
+            >
+                <Text className="text-sm text-blue-500 mr-1">
+                    {showDetails ? 'Ocultar pronósticos' : 'Mostrar pronóstico de 4 días'}
+                </Text>
+                <Ionicons
+                    name={showDetails ? "chevron-up" : "chevron-down"}
+                    size={16}
+                    color="#3b82f6"
+                />
+            </TouchableOpacity>
+            {/* Detalles adicionales (colapsables) */}
+            {showDetails && (
+                <>
 
-            {/* Forecast para varios días */}
-            <DailyForecast data={data} />
+                    <DailyForecast data={data} />
+                </>
+            )}
+
         </View>
     );
 }
