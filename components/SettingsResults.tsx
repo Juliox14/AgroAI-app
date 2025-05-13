@@ -17,7 +17,7 @@ import { createFileFromBase64 } from '@/utils/general';
 
 export default function SettingsResults({ expedientes, plants, payload, stats, imageBase64 }:SettingsresultsProps) {
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedPlant, setSelectedPlant] = useState();
+  const [selectedPlant, setSelectedPlant] = useState(plants ? plants[0].id_planta : 0);	
   const [modalForm, setModalForm] = useState(false);
   const router = useRouter();
 
