@@ -177,6 +177,11 @@ export default function SettingsResults({ expedientes, plants, payload, stats, i
                           <Picker.Item key={plant.id_planta} label={plant.name} value={plant.id_planta} style={{ margin: 0, padding: 0 }} />
                         ))}
                     </Picker>
+                                        {/* <PlantSelect 
+                      plants={plants}
+                      selectedPlant={selectedPlant}
+                      onSelect={(id:string) => setSelectedPlant(id)}
+                    /> */}
                     <TouchableOpacity 
                       className="bg-green-700 rounded-lg py-4 items-center mt-5"
                       onPress={handleSubmitNewExpediente}>

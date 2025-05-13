@@ -56,3 +56,9 @@ export interface CustomModalProps {
   setModalHidden: () => void,
   children?: React.ReactNode
 }
+
+export interface PlantSelectProps {
+  plants: plant[] | undefined,
+  selectedPlant: string,
+  onSelect: (id: string) => void,
+}
