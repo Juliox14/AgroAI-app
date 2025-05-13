@@ -117,7 +117,7 @@ export default function Camara() {
           }
 
           await axios.get(`http://192.168.12.101/move?angle=${angulo}`);
-          
+
 
           console.log("🛰️ Filtro cambiado a ${filter} (ángulo ${angulo}°)");
         } catch (error: any) {
@@ -129,7 +129,6 @@ export default function Camara() {
     cambiarFiltro();
   }, [capturedPhotos]);
 
-  
 
   return (
     <View style={styles.container}>

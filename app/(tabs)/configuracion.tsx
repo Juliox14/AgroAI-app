@@ -69,7 +69,9 @@ export default function ConfiguracionScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <View className='mt-8'>
             <LocationHeader locationName={locationName} />
+            </View>
             <ScrollView contentContainerStyle={styles.content}>
 
                 {/* Notificaciones

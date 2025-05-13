@@ -182,11 +182,11 @@ const SensorView = () => {
               <View style={styles.infoContainer}>
                 <View style={styles.infoRow}>
                   <Ionicons name="time" size={20} color="#555" />
-                  <Text style={styles.infoText}>Última actualización: {formatTime(lastUpdate)}</Text>
+                  <Text style={styles.infoText}>Última actualización:  {Math.round(parseInt(formatTime(lastUpdate)))} segundos.</Text>
                 </View>
                 <View style={styles.infoRow}>
                   <Ionicons name="timer-outline" size={20} color="#555" />
-                  <Text style={styles.infoText}>Próxima lectura en: {formatTime(nextUpdate)}</Text>
+                  <Text style={styles.infoText}>Próxima lectura en: {Math.round(parseInt(formatTime(nextUpdate)))} segundos.</Text>
                 </View>
               </View>
 
