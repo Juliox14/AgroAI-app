@@ -83,7 +83,7 @@ export default function WeatherCard({ loading, data }: Props) {
             <View className="flex-row justify-between items-center">
                 <View>
                     <Text className="text-lg font-semibold text-gray-800">
-                        Clima en {today.nmun}, {today.nes}
+                        Clima
                     </Text>
                     <Text className="text-sm text-gray-600 mb-2">
                         Hoy, {new Date().toLocaleDateString('es-MX', {

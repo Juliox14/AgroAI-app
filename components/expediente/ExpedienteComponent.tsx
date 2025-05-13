@@ -48,6 +48,6 @@ export default function ExpedienteComponent({ expediente }: ExpedienteComponentP
 }
 
 const styles = StyleSheet.create({
-  scrollView: { flex: 1, backgroundColor: '#fff' },
+  scrollView: { flex: 1, backgroundColor: '#fff', paddingTop: 20 },
   contentContainer: { padding: 24, gap: 20 },
 });

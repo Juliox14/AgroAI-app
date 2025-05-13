@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { use, useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { CameraView, CameraType } from 'expo-camera';
 import { useRouter } from 'expo-router';
@@ -89,7 +89,7 @@ export default function Camara() {
           pathname: '/results/NDVIResult',
           params: {
             stats: JSON.stringify(ndviStats),
-            image: imagenNDVI,               
+            image: imagenNDVI,
           },
         });
 
@@ -117,6 +117,7 @@ export default function Camara() {
           }
 
           await axios.get(`http://192.168.130.101/move?angle=${angulo}`);
+          
 
           console.log("🛰️ Filtro cambiado a ${filter} (ángulo ${angulo}°)");
         } catch (error: any) {
@@ -127,6 +128,8 @@ export default function Camara() {
 
     cambiarFiltro();
   }, [capturedPhotos]);
+
+  
 
   return (
     <View style={styles.container}>
