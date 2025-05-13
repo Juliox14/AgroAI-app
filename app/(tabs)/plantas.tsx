@@ -1,11 +1,12 @@
 import PlantaCard from '@/components/PlantaCard';
 import PlantaCardSkeleton from '@/components/Fallbacks/PlantaCardSkeleton';
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
 import { Expediente } from '@/types/plantas';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Plantas() {
   const [expedientes, setExpedientes] = useState<Expediente[]>([]);
@@ -28,6 +29,10 @@ export default function Plantas() {
     fetchExpedientes();
   }, []);
 
+  const handleAddPlant = () => {
+    router.push('/(tabs)/camara');
+  };
+
   return (
     <ScrollView>
       <SafeAreaView className="flex-1 p-6">
@@ -41,27 +46,47 @@ export default function Plantas() {
           </View>
         ) : (
           <View className="flex-1 gap-6 mt-4">
-            {expedientes.map((item, id) => (
-              <PlantaCard
-                key={id}
-                nombre={item.planta.name}
-                nombreCientifico={item.planta.nombre_cientifico}
-                uriImagen={item.planta.uri_imagen}
-                salud={item.ultimo_registro ? item.ultimo_registro.healthy : 0}
-                estres={item.ultimo_registro ? item.ultimo_registro.stressed : 0}
-                humedad={item.ultimo_registro ? item.ultimo_registro.dry : 0}
-                anomalias={item.ultimo_registro ? item.ultimo_registro.anomaly : 0}
-                handleAction={() => {
-                  router.push({
-                    pathname: "/expediente/[id]",
-                    params: { id: item.id_expediente },
-                  });
-                }}
-              />
-            ))}
+            {expedientes === null ? (
+              <View className="items-center justify-center mt-10">
+                <Ionicons name="leaf-outline" size={60} color="#9CA3AF" className="mb-4" />
+                <Text className="text-xl font-semibold text-gray-600 mb-2 text-center">
+                  ¡Ups! Parece que no tienes plantas registradas
+                </Text>
+                <Text className="text-gray-500 text-center mb-6">
+                  Comienza agregando tu primera planta para monitorear su salud
+                </Text>
+                <TouchableOpacity
+                  onPress={handleAddPlant}
+                  className="flex-row items-center bg-green-600 px-6 py-3 rounded-lg"
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="add" size={20} color="white" />
+                  <Text className="text-white font-medium ml-2">Agregar primera planta</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              expedientes.map((item, id) => (
+                <PlantaCard
+                  key={id}
+                  nombre={item.planta.name}
+                  nombreCientifico={item.planta.nombre_cientifico}
+                  uriImagen={item.planta.uri_imagen}
+                  salud={item.ultimo_registro ? item.ultimo_registro.healthy : 0}
+                  estres={item.ultimo_registro ? item.ultimo_registro.stressed : 0}
+                  humedad={item.ultimo_registro ? item.ultimo_registro.dry : 0}
+                  anomalias={item.ultimo_registro ? item.ultimo_registro.anomaly : 0}
+                  handleAction={() => {
+                    router.push({
+                      pathname: "/expediente/[id]",
+                      params: { id: item.id_expediente },
+                    });
+                  }}
+                />
+              ))
+            )}
           </View>
         )}
       </SafeAreaView>
     </ScrollView>
   );
-};
+}
