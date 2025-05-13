@@ -17,7 +17,7 @@ const PlantaCard = ({ nombre, nombreCientifico, salud = 40, estres = 10, humedad
                     </Text>
                 </View>
             </View>
-            <View className="flex-row items-center flex-wrap gap-y-2 w-full mt-4 justify-between mb-2 px-6">
+            <View className="flex-row items-center flex-wrap gap-y-2 w-full mt-4 justify-between mb-2 px-2">
                 <View className="flex-row items-center justify-center gap-2 mt-2">
                     <Ionicons name="leaf-sharp" size={24} />
                     <View className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">

@@ -18,7 +18,7 @@ export default function Plantas() {
       try {
         const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/database/getVistaExpedientes/${payload?.id}`);
         const json = await res.json();
-        setExpedientes(json.data[0].obtener_vista_expedientes);
+        setExpedientes(json.data);
       } catch (error) {
         console.error('Error al cargar datos:', error);
       } finally {

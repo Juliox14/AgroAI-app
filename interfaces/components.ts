@@ -48,6 +48,7 @@ export interface ExpedienteComponentProps {
 }
 
 export interface RegistroComponentProps {
+  index: number;
   registro: registro,
 }
 export interface CustomModalProps {
