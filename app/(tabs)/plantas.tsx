@@ -17,9 +17,11 @@ export default function Plantas() {
   useEffect(() => {
     const fetchExpedientes = async () => {
       try {
+      
         const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/database/getVistaExpedientes/${payload?.id}`);
         const json = await res.json();
         setExpedientes(json.data);
+        console.log('Datos de expedientes:', json.data);
       } catch (error) {
         console.error('Error al cargar datos:', error);
       } finally {
@@ -46,7 +48,7 @@ export default function Plantas() {
           </View>
         ) : (
           <View className="flex-1 gap-6 mt-4">
-            {expedientes === null ? (
+            {(expedientes === null || expedientes === undefined) ? (
               <View className="items-center justify-center mt-10">
                 <Ionicons name="leaf-outline" size={60} color="#9CA3AF" className="mb-4" />
                 <Text className="text-xl font-semibold text-gray-600 mb-2 text-center">

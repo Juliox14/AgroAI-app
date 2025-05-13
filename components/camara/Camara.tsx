@@ -111,12 +111,12 @@ export default function Camara() {
         try {
           let angulo = 90;
           if (filter === 'Filtro azul') {
-            angulo = 180;
-          } else if (filter === 'Filtro IR') {
             angulo = 35;
+          } else if (filter === 'Filtro IR') {
+            angulo = 150;
           }
 
-          await axios.get(`http://192.168.130.101/move?angle=${angulo}`);
+          await axios.get(`http://192.168.12.101/move?angle=${angulo}`);
           
 
           console.log("🛰️ Filtro cambiado a ${filter} (ángulo ${angulo}°)");

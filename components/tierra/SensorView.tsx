@@ -26,7 +26,7 @@ const SensorView = () => {
   const fetchSensorData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://${ipAddress}/datos`);
+      const response = await fetch(`http://192.168.12.70/datos`);
       const data: SensorData = await response.json();
 
       setHumedad(data.humedad);
@@ -130,11 +130,11 @@ const SensorView = () => {
               <View style={styles.infoContainer}>
                 <View style={styles.infoRow}>
                   <Ionicons name="time" size={20} color="#555" />
-                  <Text style={styles.infoText}>Última actualización: {lastUpdate}</Text>
+                  <Text style={styles.infoText}>Última actualización: {parseInt(lastUpdate)/100} minutos</Text>
                 </View>
                 <View style={styles.infoRow}>
                   <Ionicons name="timer-outline" size={20} color="#555" />
-                  <Text style={styles.infoText}>Próxima lectura: {nextUpdate}</Text>
+                  <Text style={styles.infoText}>Próxima lectura: {parseInt(nextUpdate)/100}</Text>
                 </View>
               </View>
 
