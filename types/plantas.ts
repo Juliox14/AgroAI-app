@@ -26,4 +26,5 @@ export type Expediente = {
     fecha_creacion: string;
     planta: Planta;
     ultimo_registro: Registro | null;
+    uri_imagen: string | undefined;
 };

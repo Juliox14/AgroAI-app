@@ -20,6 +20,7 @@ export default function Plantas() {
       
         const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/database/getVistaExpedientes/${payload?.id}`);
         const json = await res.json();
+        console.log("respeta desde las plantas bro: ", json.data);
         setExpedientes(json.data);
         console.log('Datos de expedientes:', json.data);
       } catch (error) {
@@ -31,9 +32,16 @@ export default function Plantas() {
     fetchExpedientes();
   }, []);
 
+  useEffect(() => {
+    console.log('Expedientes:', expedientes);
+  }, [expedientes]);
+
   const handleAddPlant = () => {
     router.push('/(tabs)/camara');
   };
+
+  if(!expedientes)
+    return
 
   return (
     <ScrollView>
@@ -48,7 +56,7 @@ export default function Plantas() {
           </View>
         ) : (
           <View className="flex-1 gap-6 mt-4">
-            {(expedientes === null || expedientes === undefined) ? (
+            {(expedientes === null || expedientes === undefined || expedientes.length === 0) ? (
               <View className="items-center justify-center mt-10">
                 <Ionicons name="leaf-outline" size={60} color="#9CA3AF" className="mb-4" />
                 <Text className="text-xl font-semibold text-gray-600 mb-2 text-center">
@@ -72,7 +80,7 @@ export default function Plantas() {
                   key={id}
                   nombre={item.planta.name}
                   nombreCientifico={item.planta.nombre_cientifico}
-                  uriImagen={item.planta.uri_imagen}
+                  uriImagen={item.uri_imagen}
                   salud={item.ultimo_registro ? item.ultimo_registro.healthy : 0}
                   estres={item.ultimo_registro ? item.ultimo_registro.stressed : 0}
                   humedad={item.ultimo_registro ? item.ultimo_registro.dry : 0}
