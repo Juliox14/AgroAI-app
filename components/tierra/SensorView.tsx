@@ -1,4 +1,3 @@
-// components/SensorView.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -14,14 +13,23 @@ interface SensorData {
 
 const SensorView = () => {
   const [humedad, setHumedad] = useState<number>(0);
-  const [lastUpdate, setLastUpdate] = useState<string>('Nunca');
-  const [nextUpdate, setNextUpdate] = useState<string>('--');
+  const [lastUpdate, setLastUpdate] = useState<number>(0); // en segundos
+  const [nextUpdate, setNextUpdate] = useState<number>(0); // en segundos
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [sensando, setSensando] = useState<boolean>(false);
+  
   const intervalRef = useRef<any>(null);
-
+  const timerRef = useRef<any>(null);
   const ipAddress = '192.168.1.100'; // Cambiar por tu IP
+
+  // Función para formatear el tiempo
+  const formatTime = (seconds: number) => {
+    if (seconds < 60) return `${seconds} segundos`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes} min ${remainingSeconds} seg`;
+  };
 
   const fetchSensorData = async () => {
     try {
@@ -30,12 +38,11 @@ const SensorView = () => {
       const data: SensorData = await response.json();
 
       setHumedad(data.humedad);
-
-      const lastUpdateSec = Math.floor((Date.now() - data.ultima_lectura_ms) / 1000);
-      setLastUpdate(lastUpdateSec < 60 ? `${lastUpdateSec} segundos` : `${Math.floor(lastUpdateSec / 60)} minutos`);
-
-      setNextUpdate(`${Math.ceil(data.proxima_lectura_en_ms / 1000)} segundos`);
-
+      
+      // Resetear los contadores con los nuevos valores del servidor
+      setLastUpdate(0);
+      setNextUpdate(data.proxima_lectura_en_ms / 1000);
+      
       setError(null);
     } catch (err) {
       setError('Error conectando al sensor');
@@ -45,30 +52,75 @@ const SensorView = () => {
     }
   };
 
+  // Iniciar el cronómetro
+  const startTimer = () => {
+    stopTimer(); // Asegurarse de que no hay timers previos
+    
+    // Timer para lastUpdate (incrementa cada segundo)
+    timerRef.current = setInterval(() => {
+      setLastUpdate(prev => prev + 1);
+    }, 1000);
+  };
+
+  // Detener el cronómetro
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  // Actualizar el contador de próxima lectura
+  useEffect(() => {
+    if (sensando && nextUpdate > 0) {
+      const updateCountdown = setInterval(() => {
+        setNextUpdate(prev => {
+          if (prev <= 1) {
+            clearInterval(updateCountdown);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(updateCountdown);
+    }
+  }, [sensando, nextUpdate]);
+
   const startMonitoring = () => {
     setSensando(true);
-    fetchSensorData(); // Obtener inmediatamente
-    intervalRef.current = setInterval(fetchSensorData, 10000); // Luego cada 10s
+    fetchSensorData(); // Primera lectura inmediata
+    startTimer(); // Iniciar cronómetro
+    
+    // Configurar intervalo para lecturas periódicas
+    intervalRef.current = setInterval(() => {
+      fetchSensorData();
+      setLastUpdate(0); // Reiniciar contador después de cada lectura
+    }, 10000); // Cada 10 segundos
   };
 
   const stopMonitoring = () => {
     setSensando(false);
+    stopTimer();
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
   };
 
+  // Limpieza al desmontar
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
+  // Determinar estado y color
   let estado = '';
   let color = '#9e9e9e';
 
-  if (!loading && !error) {
+  if (!loading && !error && sensando) {
     if (humedad < 30) {
       estado = 'Baja';
       color = '#f44336';
@@ -130,11 +182,11 @@ const SensorView = () => {
               <View style={styles.infoContainer}>
                 <View style={styles.infoRow}>
                   <Ionicons name="time" size={20} color="#555" />
-                  <Text style={styles.infoText}>Última actualización: {lastUpdate}</Text>
+                  <Text style={styles.infoText}>Última actualización: {formatTime(lastUpdate)}</Text>
                 </View>
                 <View style={styles.infoRow}>
                   <Ionicons name="timer-outline" size={20} color="#555" />
-                  <Text style={styles.infoText}>Próxima lectura: {nextUpdate}</Text>
+                  <Text style={styles.infoText}>Próxima lectura en: {formatTime(nextUpdate)}</Text>
                 </View>
               </View>
 
