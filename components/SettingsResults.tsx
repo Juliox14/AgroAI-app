@@ -1,6 +1,6 @@
 // React
-import React, { useState } from 'react';
-import { View, Text, Alert, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 
 // Types
@@ -20,6 +20,10 @@ export default function SettingsResults({ expedientes, plants, payload, stats, i
   const [selectedPlant, setSelectedPlant] = useState();
   const [modalForm, setModalForm] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    console.log("Expedientes", plants);
+  },[])
 
   const handleSubmitResults = async(id_expediente: number) => {
     if (!expedientes)
@@ -55,6 +59,7 @@ export default function SettingsResults({ expedientes, plants, payload, stats, i
       }
 
       // Aquí pondre un toast de éxito
+      Alert.alert('Éxito', "Expediente actualizado con éxito, se redirigirá a la pantalla principal");
 
       setTimeout(() => {
         router.push("/(tabs)");
@@ -92,6 +97,8 @@ export default function SettingsResults({ expedientes, plants, payload, stats, i
     formData.append("dry", stats.dry_percentage.toString());
     formData.append("anomaly", stats.anomaly_percentage.toString());
 
+    console.log("ID Planta", selectedPlant);
+
     const response = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/database/postExpedientes`, {
       method: 'POST',
       body: formData
@@ -103,6 +110,7 @@ export default function SettingsResults({ expedientes, plants, payload, stats, i
     }
 
     // Aquí pondre un toast de éxito
+    Alert.alert('Éxito', "Expediente creado con éxito, se redirigirá a la pantalla principal");
 
     setTimeout(() => {
       router.push("/(tabs)");
@@ -119,54 +127,61 @@ export default function SettingsResults({ expedientes, plants, payload, stats, i
           <RectangleRounded handleDecision={() => router.push('/(tabs)')} icon="ban-outline" text="No guardar los datos"/>
 
           <CustomModal modalVisible={modalVisible} setModalHidden={() => setModalVisible(false)}>
-            <View className="mt-4">
+            <View>
               {!expedientes && (
-                <Text className="text-lg text-center font-medium mb-4">No hay plantas para mostrar</Text>
+                <View className="h-screen justify-center items-center">
+                  <Text className="text-lg text-center font-medium pb-[15%]">No hay expedientes por mostrar</Text>
+                </View>
               )}
               {expedientes && (
-                <>
-                  <Text className="text-2xl text-center font-semibold mb-4">Elije tu planta</Text>
-                  <View className='flex gap-2'>
-                    {expedientes.map((expediente) => (
-                      <PlantaCard 
-                        key={expediente.id_expediente}
-                        nombre={expediente.planta.name}
-                        nombreCientifico={expediente.planta.nombre_cientifico}
-                        salud={expediente.ultimo_registro.healthy}
-                        estres={expediente.ultimo_registro.stressed}
-                        humedad={expediente.ultimo_registro.dry}
-                        anomalias={expediente.ultimo_registro.anomaly}
-                        handleAction={() => handleSubmitResults(expediente.id_expediente)}
-                      />
-                    ))}
-                  </View>
-                </>
+                <View className="h-screen">
+                  <ScrollView className="">
+                    <Text className="text-2xl text-center font-semibold mt-20 mb-4">Elije tu expediente</Text>
+                    <View className="px-10 pb-10 gap-2">
+                      {expedientes.map((expediente) => (
+                        <PlantaCard 
+                          key={expediente.id_expediente}
+                          nombre={expediente.planta.name}
+                          nombreCientifico={expediente.planta.nombre_cientifico}
+                          salud={expediente.ultimo_registro.healthy}
+                          estres={expediente.ultimo_registro.stressed}
+                          humedad={expediente.ultimo_registro.dry}
+                          anomalias={expediente.ultimo_registro.anomaly}
+                          handleAction={() => handleSubmitResults(expediente.id_expediente)}
+                        />
+                      ))}
+                      <View className="h-10" />
+                    </View>
+                  </ScrollView>
+                </View>
               )}
             </View>
           </CustomModal>
 
           <CustomModal modalVisible={modalForm} setModalHidden={() => setModalForm(false)}>
-            <View className="flex">
-              {!expedientes && (
-                <Text className="text-lg text-center font-medium mb-4">No posees plantas, por favor, agrega una para guardar un expediente</Text>
+            <View>
+              {!plants && (
+                <View className="h-screen justify-center items-center">
+                  <Text className="text-lg text-center font-medium pb-[15%]">No posees plantas, por favor, agrega una para guardar un expediente</Text>
+                </View>
               )}
-                {expedientes && (
-                  <View className=''>
-                    <Text className="text-2xl text-center font-semibold mb-4">Crear un nuevo expediente</Text>
-                    <Text>Selecciona una opción:</Text>
+                {plants && (
+                  <View className="h-screen px-10">
+                    <Text className="text-2xl text-center font-semibold mt-20 mb-6">Crear un nuevo expediente</Text>
+                    <Text className="text-lg font-medium text-center">Selecciona una opción:</Text>
                     <Picker
-                      className="border border-black rounded-lg shadow-sm"
+                      style={{ margin: 0 }}
                       selectedValue={selectedPlant}
                       onValueChange={(itemValue) => setSelectedPlant(itemValue)}>
                         {plants?.map(plant => (
-                          <Picker.Item key={plant.id_planta} label={plant.name} value={plant.id_planta} />
+                          <Picker.Item key={plant.id_planta} label={plant.name} value={plant.id_planta} style={{ margin: 0, padding: 0 }} />
                         ))}
                     </Picker>
                     <TouchableOpacity 
-                      className="bg-green-700 rounded-lg py-4 items-center"
+                      className="bg-green-700 rounded-lg py-4 items-center mt-5"
                       onPress={handleSubmitNewExpediente}>
                       <Text className="text-white font-bold text-lg">
-                        {'Crear expediente'}
+                        Crear expediente
                       </Text>
                     </TouchableOpacity>
                   </View>
