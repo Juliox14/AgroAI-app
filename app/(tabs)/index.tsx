@@ -96,7 +96,13 @@ export default function Index() {
     <>
       {session ? (
         <SafeAreaView className="flex-1 bg-gray-100">
+          
           <LocationHeader locationName={locationName} />
+          <View className="px-8 pt-4">
+          <Text className="text-3xl font-light text-gray-600">
+              Bienvenido, Julián!
+            </Text>
+          </View>
           <ScrollView className="px-5 pt-6">
             {/* Tarjeta de clima */}
             <WeatherCard loading={loadingForecast} data={forecast} />
