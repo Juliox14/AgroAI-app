@@ -49,9 +49,9 @@ export default function LayoutTabs() {
                         }}
                     />
                     <Tabs.Screen
-                        name="plantas"
+                        name="parcelas"
                         options={{
-                            title: 'Plantas',
+                            title: 'Parcelas',
                             headerShown: false,
                             tabBarIcon: ({ focused }) => (
                                 <Ionicons
@@ -62,6 +62,7 @@ export default function LayoutTabs() {
                             )
                         }}
                     />
+                    
                     <Tabs.Screen
                         name="camara/index"
                         options={{

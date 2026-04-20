@@ -29,16 +29,24 @@ export default function RootLayout() {
           name="results/NDVIResult"
           options={{
             headerShown: false,
+
           }}
         />
 
         <Stack.Screen
-          name="expediente/[id]"
+          name="parcela/[id]"
           options={{
             headerShown: false,
           }}
         />
+
+        <Stack.Screen
+          name="parcelas/nueva-parcela"
+          options={{ headerShown: false }}
+        />
+
       </Stack>
+
     </AuthProvider>
   );
 }

@@ -1,7 +1,7 @@
 import Camara from '@/components/camara/Camara';
 import { useCameraPermissions } from 'expo-camera';
-import { View, Text, TouchableOpacity, SafeAreaView, } from 'react-native';
-
+import { View, Text, TouchableOpacity, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();

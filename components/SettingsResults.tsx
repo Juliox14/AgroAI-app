@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import { SettingsresultsProps } from "@/interfaces/components";
 
 // Components
-import PlantaCard from './PlantaCard';
+import PlantaCard from './ParcelaCard';
 import RectangleRounded from './RectagleRounded';
 import CustomModal from './CustomModal';
 import { Picker } from "@react-native-picker/picker";

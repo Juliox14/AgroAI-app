@@ -10,10 +10,10 @@ import {
   Platform,
   StatusBar,
   ScrollView,
-  SafeAreaView
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const RegistroScreen = () => {
   const [name, setName] = useState('');
@@ -29,12 +29,12 @@ const RegistroScreen = () => {
       return;
     }
 
-    const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/auth/register`, {
+    const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ nombre: name, email, password })
     });
 
     const data = await res.json();

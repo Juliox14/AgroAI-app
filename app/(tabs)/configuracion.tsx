@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, Text, Switch, TouchableOpacity, StyleSheet, Alert, Share, Linking } from 'react-native';
+import { ScrollView, View, Text, Switch, TouchableOpacity, StyleSheet, Alert, Share, Linking } from 'react-native';
 import { normalizarEstado } from '@/utils/normalizarEstado';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
 import * as Location from 'expo-location';
 import LocationHeader from '@/components/home/LocationHeader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ConfiguracionScreen() {
     const [notificaciones, setNotificaciones] = useState(false);

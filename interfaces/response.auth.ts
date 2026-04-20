@@ -1,6 +1,6 @@
-import { payload, plantCard } from "@/types/auth"
+import { payload } from "@/types/auth"
 
 export interface responseAuth {
-  message: string,
+  mensaje: string,
   payload: payload
 }

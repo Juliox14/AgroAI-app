@@ -1,28 +1,23 @@
 // components/WeatherCard.tsx
 import { useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import DailyForecast, { ForecastItem } from './DailyForecast';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+// import { Ionicons } from '@expo/vector-icons';
+// import DailyForecast from './DailyForecast'; // Oculto temporalmente
+
+// 1. Definimos la nueva interfaz según lo que devuelve tu backend
+export interface WeatherData {
+    temperature: number;
+    wind_speed: number;
+    time: string;
+    precipitation: number;
+    temp_max: number;
+    temp_min: number;
+}
 
 interface Props {
     loading: boolean;
-    data: ForecastItem[];
+    data: WeatherData | null; // Ahora es un solo objeto o null
 }
-
-type emojiByDesc = {
-    [key: string]: string;
-};
-
-const emojiByDesc: emojiByDesc = {
-    'Despejado': '☀️',
-    'Mayormente despejado': '🌤️',
-    'Parcial nuboso': '⛅️',
-    'Poco nuboso': '⛅️',
-    'Cielo nublado': '☁️',
-    'Medio nublado': '☁️',
-    'Lluvia aislada': '🌧️',
-    'Tormenta': '⛈️',
-};
 
 const SkeletonLoader = () => {
     return (
@@ -34,7 +29,6 @@ const SkeletonLoader = () => {
                     <View className="h-4 w-40 bg-gray-200 rounded mb-4 animate-pulse"></View>
                     <View className="flex-row items-baseline">
                         <View className="h-12 w-16 bg-gray-200 rounded animate-pulse"></View>
-                        <View className="h-6 w-8 bg-gray-200 rounded ml-2 animate-pulse"></View>
                     </View>
                     <View className="h-4 w-32 bg-gray-200 rounded mt-2 animate-pulse"></View>
                 </View>
@@ -50,44 +44,32 @@ const SkeletonLoader = () => {
                     </View>
                 ))}
             </View>
-
-            {/* Forecast */}
-            <View className="mt-4">
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    {[...Array(4)].map((_, i) => (
-                        <View key={i} className="bg-gray-200 rounded-lg p-3 mr-3 w-24 h-32 animate-pulse"></View>
-                    ))}
-                </ScrollView>
-            </View>
         </View>
     );
 };
 
-
 export default function WeatherCard({ loading, data }: Props) {
-    const [showDetails, setShowDetails] = useState(false);
+    // const [showDetails, setShowDetails] = useState(false);
 
-    if (loading) {
+    // Evaluamos si data es null en lugar de data.length
+    if (loading || !data) {
         return <SkeletonLoader />;
     }
 
-    if (!data.length) {
-        return <SkeletonLoader />;
-    }
+    // 2. Lógica simple para el emoji (al no tener la propiedad 'desciel')
+    // Si hay lluvia mayor a 0, mostramos lluvia, si no, sol.
+    const emoji = data.precipitation > 0 ? '🌧️' : '☀️';
 
-    const today = data[0];
-    const emoji = emojiByDesc[today.desciel] || '❓';
-
-    const toggleDetails = () => {
-        setShowDetails(!showDetails);
-    };
+    // const toggleDetails = () => {
+    //     setShowDetails(!showDetails);
+    // };
 
     return (
         <View className="bg-white rounded-2xl p-6 mb-6 shadow">
             <View className="flex-row justify-between items-center">
                 <View>
                     <Text className="text-lg font-semibold text-gray-800">
-                        Clima
+                        Clima Actual
                     </Text>
                     <Text className="text-sm text-gray-600 mb-2">
                         Hoy, {new Date().toLocaleDateString('es-MX', {
@@ -95,15 +77,13 @@ export default function WeatherCard({ loading, data }: Props) {
                         })}
                     </Text>
                     <View className="flex-row items-baseline">
+                        {/* Ahora destacamos la temperatura actual del sensor */}
                         <Text className="text-5xl font-bold text-gray-900">
-                            {today.tmax}°
-                        </Text>
-                        <Text className="text-xl text-gray-500 ml-2">
-                            {today.tmin}°
+                            {data.temperature}°
                         </Text>
                     </View>
                     <Text className="text-sm text-gray-600 mt-1">
-                        {today.desciel}
+                        Máx: {data.temp_max}° / Mín: {data.temp_min}°
                     </Text>
                 </View>
                 <Text className="items-center mt-4 ">
@@ -111,49 +91,23 @@ export default function WeatherCard({ loading, data }: Props) {
                 </Text>
             </View>
 
-            {/* Botón para expandir/contraer detalles */}
-            
-
-            <View className="flex-row justify-around mt-4 animate-fade-in">
+            {/* Reducimos los detalles solo a Viento y Lluvia que son los que devuelve el API */}
+            <View className="flex-row justify-around mt-6 animate-fade-in border-t border-gray-100 pt-4">
                 <View className="items-center">
-                    <Text className="text-xs text-gray-600">Precipitación</Text>
-                    <Text className="text-sm">☔ {today.probprec}%</Text>
-                </View>
-                <View className="items-center">
-                    <Text className="text-xs text-gray-600">Lluvia acumulada</Text>
-                    <Text className="text-sm">🌧️ {today.prec} mm</Text>
+                    <Text className="text-xs text-gray-600">Lluvia</Text>
+                    <Text className="text-sm">🌧️ {data.precipitation} mm</Text>
                 </View>
                 <View className="items-center">
                     <Text className="text-xs text-gray-600">Viento</Text>
-                    <Text className="text-sm">🌬️ {today.velvien} km/h</Text>
-                </View>
-                <View className="items-center">
-                    <Text className="text-xs text-gray-600">Nubes</Text>
-                    <Text className="text-sm">☁️ {today.cc}%</Text>
+                    <Text className="text-sm">🌬️ {data.wind_speed} km/h</Text>
                 </View>
             </View>
             
-            <TouchableOpacity
-                onPress={toggleDetails}
-                className="flex-row items-center justify-center mt-4"
-                activeOpacity={0.7}
-            >
-                <Text className="text-sm text-blue-500 mr-1">
-                    {showDetails ? 'Ocultar pronósticos' : 'Mostrar pronóstico de 4 días'}
-                </Text>
-                <Ionicons
-                    name={showDetails ? "chevron-up" : "chevron-down"}
-                    size={16}
-                    color="#3b82f6"
-                />
-            </TouchableOpacity>
-            {/* Detalles adicionales (colapsables) */}
-            {showDetails && (
-                <>
-
-                    <DailyForecast data={data} />
-                </>
-            )}
+            {/* NOTA: El botón colapsable para <DailyForecast /> está comentado.
+               Si en el futuro modificas el controlador de tu backend para que
+               Open-Meteo te devuelva también un arreglo de días futuros, 
+               puedes descomentar esta sección y pasarle ese arreglo.
+            */}
 
         </View>
     );
