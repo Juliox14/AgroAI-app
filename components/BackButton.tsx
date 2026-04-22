@@ -11,7 +11,7 @@ const BackButton = () => {
   const { colorScheme } = useColorScheme();
 
   return (
-    <View className="absolute top-12 left-4 z-50">
+    <View>
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         className="w-10 h-10 items-center justify-center  bg-transparent "

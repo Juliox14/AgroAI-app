@@ -5,15 +5,14 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
-import { Parcela } from '@/interfaces/parcelas'; // Tu nueva interfaz
+import { Parcela } from '@/interfaces/parcelas';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Parcelas() {
   const [parcelas, setParcelas] = useState<Parcela[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Asumiendo que tu AuthContext te devuelve el token JWT para hacer peticiones seguras
-  const { payload, token } = useAuth(); 
+
+  const { payload, token } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -23,15 +22,12 @@ export default function Parcelas() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            // Inyectamos el token para pasar el verificarToken del backend
-            'Authorization': `Bearer ${token}` 
-          }
+            'Authorization': `Bearer ${token}`,
+          },
         });
-        
         const json = await res.json();
         if (json.success) {
           setParcelas(json.data);
-          console.log('Datos de parcelas:', json.data);
         } else {
           console.error('Error del servidor:', json.message);
         }
@@ -42,70 +38,102 @@ export default function Parcelas() {
       }
     };
 
-    if (payload) {
-      fetchParcelas();
-    }
+    if (payload) fetchParcelas();
   }, [payload]);
 
-  const handleAddParcela = () => {
-    router.push('/parcelas/nueva-parcela');
-  };
+  const handleAddParcela = () => router.push('/parcelas/nueva-parcela');
 
   if (!parcelas && !loading) return null;
 
   return (
-    <ScrollView className="bg-gray-50 dark:bg-gray-900">
-      <SafeAreaView className="flex-1 p-6">
-        <Text className="text-3xl font-bold mb-6 text-green-900 dark:text-green-400 text-center">Mis Parcelas</Text>
+    <SafeAreaView className="flex-1 bg-white">
+
+      {/* ── Header ── */}
+      <View className="px-5 pt-4 pb-4 bg-white border-b border-green-100 shadow-sm">
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-2xl font-bold text-green-950 tracking-tight">Mis Parcelas</Text>
+            <Text className="text-xs font-medium text-green-400 mt-0.5">
+              {!loading && `${parcelas.length} terreno${parcelas.length !== 1 ? 's' : ''} registrado${parcelas.length !== 1 ? 's' : ''}`}
+            </Text>
+          </View>
+
+          {/* Botón añadir — visible siempre en el header */}
+          <TouchableOpacity
+            onPress={handleAddParcela}
+            className="flex-row items-center bg-green-700 px-4 py-2.5 rounded-xl"
+            activeOpacity={0.8}
+            style={{ shadowColor: '#14532D', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.2, shadowRadius: 6, elevation: 4 }}
+          >
+            <Ionicons name="add" size={18} color="white" />
+            <Text className="text-white font-semibold text-sm ml-1">Nueva</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView className="flex-1 px-5 pt-5" showsVerticalScrollIndicator={false}>
 
         {loading ? (
-          <View className="flex-1 gap-6 mt-4">
-            {[...Array(3)].map((_, index) => (
-              <ParcelaCardSkeleton key={`skeleton-${index}`} />
+          <View className="gap-4">
+            {[...Array(3)].map((_, i) => (
+              <ParcelaCardSkeleton key={`skeleton-${i}`} />
             ))}
           </View>
-        ) : (
-          <View className="flex-1 gap-6 mt-2">
-            {(parcelas === null || parcelas === undefined || parcelas.length === 0) ? (
-              <View className="items-center justify-center mt-10 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <Ionicons name="map-outline" size={60} color="#9CA3AF" className="mb-4" />
-                <Text className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2 text-center">
-                  Aún no hay terrenos registrados
-                </Text>
-                <Text className="text-gray-500 dark:text-gray-400 text-center mb-6">
-                  Comienza agregando tu primera milpa o parcela para llevar el registro de su salud.
-                </Text>
-                <TouchableOpacity
-                  onPress={handleAddParcela}
-                  className="flex-row items-center bg-green-700 px-6 py-3 rounded-xl shadow-sm"
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="add" size={20} color="white" />
-                  <Text className="text-white font-medium ml-2 text-lg">Registrar Parcela</Text>
-                </TouchableOpacity>
+        ) : parcelas.length === 0 ? (
+
+          /* ── Empty state ── */
+          <View className="items-center justify-center mt-16 p-8 bg-white rounded-3xl border border-green-100 shadow-sm">
+            <View className="w-20 h-20 rounded-full bg-green-50 items-center justify-center mb-5">
+              <Ionicons name="map-outline" size={40} color="#86EFAC" />
+            </View>
+            <Text className="text-xl font-bold text-green-950 mb-2 text-center">
+              Sin terrenos aún
+            </Text>
+            <Text className="text-sm text-gray-400 text-center leading-5 mb-8">
+              Registra tu primera milpa o parcela para comenzar a monitorear su salud.
+            </Text>
+            <TouchableOpacity
+              onPress={handleAddParcela}
+              className="flex-row items-center bg-green-700 px-8 py-3.5 rounded-2xl"
+              activeOpacity={0.85}
+              style={{ shadowColor: '#14532D', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 5 }}
+            >
+              <View className="w-7 h-7 rounded-lg bg-white/20 items-center justify-center mr-2">
+                <Ionicons name="add" size={18} color="white" />
               </View>
-            ) : (
-              parcelas.map((item) => (
-                <ParcelaCard
-                  key={item.id}
-                  parcela={item}
-                  // Aquí después conectaremos los datos reales de los últimos análisis NDVI
-                  saludPromedio={85} 
-                  estres={10}
-                  humedad={60}
-                  anomalias={5}
-                  handleAction={() => {
-                    router.push({
-                      pathname: '../parcela/[id]',
-                      params: { id: item.id },
-                    });
-                  }}
-                />
-              ))
-            )}
+              <Text className="text-white font-bold text-base">Registrar Parcela</Text>
+            </TouchableOpacity>
           </View>
+
+        ) : (
+
+          /* ── Lista de parcelas ── */
+          <View className="gap-4 pb-10">
+            {parcelas.map((item) => (
+              <ParcelaCard
+                key={item.id}
+                parcela={item}
+                uriImagen={item.imagen_url ? item.imagen_url : undefined}
+                handleAction={() => router.push({
+                  pathname: '../parcela/[id]',
+                  params: { id: item.id },
+                })}
+              />
+            ))}
+
+            {/* Botón añadir al final de la lista */}
+            <TouchableOpacity
+              onPress={handleAddParcela}
+              className="flex-row items-center justify-center border-2 border-dashed border-green-200 rounded-2xl py-4 bg-green-50"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add-circle-outline" size={20} color="#86EFAC" />
+              <Text className="text-green-400 font-semibold text-sm ml-2">Agregar otra parcela</Text>
+            </TouchableOpacity>
+          </View>
+
         )}
-      </SafeAreaView>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

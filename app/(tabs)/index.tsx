@@ -69,8 +69,6 @@ export default function Index() {
 
     (async () => {
       try {
-        // Ojo: En tu backend el servicio del clima corría en el 3001, 
-        // verifica si el 4001 es tu API Gateway o debes cambiarlo.
         const PUERTO = 4001;
 
         const resp = await axios.get(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:${PUERTO}/api/weather`, {

@@ -3,104 +3,93 @@ import { Ionicons } from "@expo/vector-icons";
 import { View, Image, Text, TouchableOpacity } from "react-native";
 import { Parcela } from "@/interfaces/parcelas";
 
-
 export interface ParcelaCardProps {
     parcela: Parcela;
-    saludPromedio?: number;
-    estres?: number;
-    humedad?: number;
-    anomalias?: number;
     uriImagen?: string;
+    // Agregamos estas dos propiedades reales para cuando guardes los resultados del NDVI
+    ultimoNDVI?: number; 
+    fechaUltimoEscaneo?: string;
     handleAction: () => void;
 }
 
 const ParcelaCard = ({ 
     parcela, 
-    saludPromedio = 80, 
-    estres = 15, 
-    humedad = 60, 
-    anomalias = 5, 
     uriImagen, 
+    ultimoNDVI,
+    fechaUltimoEscaneo,
     handleAction 
 }: ParcelaCardProps) => {
+
+    // Función simple para darle color al NDVI real
+    const obtenerColorNDVI = (valor?: number) => {
+        if (valor === undefined) return "bg-gray-400";
+        if (valor > 0.6) return "bg-green-600"; // Vegetación densa/sana
+        if (valor > 0.3) return "bg-yellow-500"; // Vegetación moderada
+        return "bg-red-500"; // Estrés severo o suelo desnudo
+    };
+
     return (
-        <TouchableOpacity onPress={handleAction} className="mb-4 px-6 py-4 rounded-xl bg-white shadow-md h-auto w-full justify-center items-center">
-            <View className="flex-row w-full px-4 py-2 pb-4 border-b border-b-gray-400">
+        <TouchableOpacity onPress={handleAction} className="mb-4 px-4 py-4 rounded-xl bg-white shadow-md h-auto w-full">
+            {/* Cabecera: Imagen, Nombre y Ubicación */}
+            <View className="flex-row w-full pb-4 border-b border-b-gray-200 items-center">
                 <Image 
                     source={uriImagen ? { uri: uriImagen } : require("@/assets/images/aloe.png")} 
-                    className="w-20 h-20 mr-4 rounded-full border border-gray-400" 
+                    className="w-16 h-16 mr-4 rounded-lg border border-gray-300" 
+                    resizeMode="cover"
                 />
                 <View className="flex-1 justify-center">
-                    {/* Nombre de la Parcela (ej. "Milpa del Río") */}
-                    <Text className="text-lg font-semibold mb-1 mt-4 text-gray-800">
+                    <Text className="text-lg font-bold text-gray-800" numberOfLines={1}>
                         {parcela.nombre}
                     </Text>
-                    {/* Reemplazamos Nombre Científico por Sistema y Ubicación */}
-                    <Text className="text-sm text-gray-600 mb-4 ">
+                    <Text className="text-sm text-gray-500 mt-1" numberOfLines={1}>
                         {parcela.tipo_sistema} • {parcela.comunidad_ejido || "Sin ubicación"}
                     </Text>
                 </View>
             </View>
 
-            {/* Panel de Estadísticas del Terreno */}
-            <View className="flex-row items-center flex-wrap gap-y-2 w-full mt-4 justify-between mb-2 px-2">
-                
-                {/* Salud Promedio (Basado en NDVI) */}
-                <View className="flex-row items-center justify-center gap-2 mt-2">
-                    <Ionicons name="leaf-sharp" size={24} color="#15803d" />
-                    <View className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
-                        <View
-                            style={{ width: `${saludPromedio}%` }}
-                            className="h-1 bg-green-700"
-                        />
-                    </View>
-                    <Text className="text-sm text-gray-600">
-                        {saludPromedio}%
+            {/* Fila de Datos Duros (Lo que realmente sabemos de la base de datos) */}
+            <View className="flex-row flex-wrap mt-3 gap-2">
+                {/* Cultivos */}
+                <View className="flex-row items-center bg-green-50 px-2 py-1 rounded-md">
+                    <Ionicons name="leaf-outline" size={14} color="#15803d" />
+                    <Text className="text-xs text-green-800 ml-1 font-medium" numberOfLines={1} style={{ maxWidth: 100 }}>
+                        {parcela.cultivos_asociados || "Sin registro"}
                     </Text>
                 </View>
 
-                {/* Nivel de Estrés / Riego */}
-                <View className="flex-row items-center justify-center gap-2 mt-2">
-                    <Ionicons name="water-sharp" size={24} color="#0369a1" />
-                    <View className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
-                        <View
-                            style={{ width: `${estres}%` }}
-                            className="h-1 bg-blue-700"
-                        />
-                    </View>
-                    <Text className="text-sm text-gray-600">
-                        {estres}%
+                {/* Tipo de Riego */}
+                <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded-md">
+                    <Ionicons name="water-outline" size={14} color="#0369a1" />
+                    <Text className="text-xs text-blue-800 ml-1 font-medium">
+                        {parcela.tipo_riego || "N/A"}
                     </Text>
                 </View>
 
-                {/* Humedad del Suelo */}
-                <View className="flex-row items-center justify-center gap-2 mt-2">
-                    <Ionicons name="earth-sharp" size={24} color="#a16207" />
-                    <View className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
-                        <View
-                            style={{ width: `${humedad}%` }}
-                            className="h-1 bg-yellow-700"
-                        />
+                {/* Área */}
+                {parcela.area_metros_cuadrados && (
+                    <View className="flex-row items-center bg-amber-50 px-2 py-1 rounded-md">
+                        <Ionicons name="scan-outline" size={14} color="#b45309" />
+                        <Text className="text-xs text-amber-800 ml-1 font-medium">
+                            {parcela.area_metros_cuadrados} m²
+                        </Text>
                     </View>
-                    <Text className="text-sm text-gray-600">
-                        {humedad}%
-                    </Text>
-                </View>
+                )}
+            </View>
 
-                {/* Anomalías Detectadas */}
-                <View className="flex-row items-center justify-center gap-2 mt-2">
-                    <Ionicons name="sunny-sharp" size={24} color="#b91c1c" />
-                    <View className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
-                        <View
-                            style={{ width: `${anomalias}%` }}
-                            className="h-1 bg-red-700"
-                        />
+            {/* El único indicador analítico real: NDVI */}
+            <View className="flex-row justify-between items-center mt-4 pt-3 border-t border-t-gray-100">
+                <Text className="text-sm text-gray-500 font-medium">
+                    Último análisis NDVI:
+                </Text>
+                {ultimoNDVI !== undefined ? (
+                    <View className="flex-row items-center">
+                        <View className={`w-3 h-3 rounded-full ${obtenerColorNDVI(ultimoNDVI)} mr-2`} />
+                        <Text className="text-sm font-bold text-gray-700">{ultimoNDVI.toFixed(2)}</Text>
+                        <Text className="text-xs text-gray-400 ml-2">({fechaUltimoEscaneo})</Text>
                     </View>
-                    <Text className="text-sm text-gray-600">
-                        {anomalias}%
-                    </Text>
-                </View>
-
+                ) : (
+                    <Text className="text-sm text-gray-400 italic">Sin escaneos</Text>
+                )}
             </View>
         </TouchableOpacity>
     );
