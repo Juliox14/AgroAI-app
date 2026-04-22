@@ -1,252 +1,241 @@
-import React, { use, useEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
-import { CameraView, CameraType } from 'expo-camera';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, StyleSheet, ActivityIndicator, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
+import * as FileSystem from 'expo-file-system';
 
 import MarcoGuia from './MarcoGuia';
 import Boton from './Boton';
 import PreviewImagen from './PreviewImagen';
-import FlujoCaptura from './FlujoCaptura';
 import CargandoAnalisis from '../Analizando';
 
-type CapturedPhoto = {
-  filtro: 'Sin filtro' | 'Filtro azul' | 'Filtro IR';
-  uri: string | null;
-};
+const RASPBERRY_IP = process.env.EXPO_PUBLIC_RASPBERRY_IP;
+const RASPBERRY_WHEP_URL = `http://${RASPBERRY_IP}:8889/camara_noir/whep`;
+const RASPBERRY_SNAPSHOT_URL = 'http://${process.env.RASPBERRY_PUBLIC_IP_ADDRESS}:5000/capturar';
 
 export default function Camara() {
   const router = useRouter();
-  const cameraRef = useRef<any>(null);
 
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([
-    { filtro: 'Sin filtro', uri: null },
-    { filtro: 'Filtro azul', uri: null },
-    { filtro: 'Filtro IR', uri: null },
-  ]);
-  const [showInstructions, setShowInstructions] = useState(false);
+  // Ahora solo manejamos UNA sola foto capturada
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [analizando, setAnalizando] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [streamError, setStreamError] = useState(false);
 
-  // Mostrar guía al montar
-  useEffect(() => {
-    setShowInstructions(true);
-    Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
-  }, []);
-
-  // Alternar cámara front/back
-  const toggleFacing = () => {
-    setFacing(prev => (prev === 'back' ? 'front' : 'back'));
-  };
-
-  // Tomar foto
+  // 🟢 Tomar foto (Descarga la imagen desde la Raspberry Pi al Caché)
   const takePicture = async () => {
-    if (!cameraRef.current) return;
-    const photo = await cameraRef.current.takePictureAsync();
-    const idx = capturedPhotos.findIndex(p => p.uri === null);
-    if (idx !== -1) {
-      const copy = [...capturedPhotos];
-      copy[idx].uri = photo.uri;
-      setCapturedPhotos(copy);
+    if (isCapturing) return;
+    setIsCapturing(true);
+
+    try {
+      const directorioTemporal = (FileSystem as any).cacheDirectory;
+      const fileUri = `${directorioTemporal}captura_agroai_${Date.now()}.jpg`;
+
+      // Descargar la imagen de alta resolución
+      const { uri } = await (FileSystem as any).downloadAsync(RASPBERRY_SNAPSHOT_URL, fileUri);
+
+      setCapturedPhoto(uri);
+    } catch (error) {
+      alert('Error: No se pudo obtener la captura de la Raspberry Pi');
+      console.error(error);
+    } finally {
+      setIsCapturing(false);
     }
   };
 
-  // Cancelar una foto
-  const cancelarFoto = (index: number) => {
-    const copy = [...capturedPhotos];
-    copy[index].uri = null;
-    setCapturedPhotos(copy);
+  // Cancelar la foto tomada
+  const cancelarFoto = () => {
+    setCapturedPhoto(null);
   };
 
-  // Enviar al backend
-  const enviarFotos = async () => {
-    if (capturedPhotos.some(p => p.uri === null)) {
-      alert('Toma las 3 fotos primero');
+  // 🟢 Enviar al backend
+  const enviarFoto = async () => {
+    if (!capturedPhoto) {
+      alert('Toma una captura primero');
       return;
     }
+
     setAnalizando(true);
-    setTimeout(async () => {
-      try {
-        const form = new FormData();
-        form.append('nombre', 'captura_agroai');
-        for (const p of capturedPhotos) {
-          form.append(
-            p.filtro === 'Sin filtro'
-              ? 'sin_filtro'
-              : p.filtro === 'Filtro azul'
-                ? 'filtro_azul'
-                : 'filtro_ir',
-            { uri: p.uri!, name: `${p.filtro}.jpg`, type: 'image/jpeg' } as any
-          );
-        }
-        const res = await axios.post(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/ndvi/procesar`, form, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        const { ndviStats, imagenNDVI } = res.data;
 
-        router.push({
-          pathname: '/results/NDVIResult',
-          params: {
-            stats: JSON.stringify(ndviStats),
-            image: imagenNDVI,
-          },
-        });
+    try {
+      const form = new FormData();
+      form.append('nombre', 'captura_noir');
+      form.append('imagen', {
+        uri: capturedPhoto,
+        name: 'captura_noir.jpg',
+        type: 'image/jpeg',
+      } as any);
 
-      } catch {
-        alert('Error enviando imágenes');
-      } finally {
-        setAnalizando(false);
-      }
-    }, 500);
+      // Asegúrate de que esta IP sea la de la computadora de tu amigo
+      const urlEnvio = `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/ndvi/procesar`;
+
+      const res = await axios.post(urlEnvio, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      const { ndviStats, imagenNDVI } = res.data;
+
+      router.push({
+        pathname: '/results/NDVIResult',
+        params: {
+          stats: JSON.stringify(ndviStats),
+          image: imagenNDVI,
+        },
+      });
+
+    } catch (error) {
+      alert('Error enviando la imagen al servidor');
+      console.error(error);
+    } finally {
+      setAnalizando(false);
+    }
   };
 
-  useEffect(() => {
-    const cambiarFiltro = async () => {
-      const currentPhoto = capturedPhotos.find((foto) => foto.uri === null);
-
-      if (currentPhoto) {
-        const filter = currentPhoto.filtro;
-
-        try {
-          let angulo = 90;
-          if (filter === 'Filtro azul') {
-            angulo = 35;
-          } else if (filter === 'Filtro IR') {
-            angulo = 150;
-          }
-
-          await axios.get(`http://192.168.12.101/move?angle=${angulo}`);
-
-
-          console.log("🛰️ Filtro cambiado a ${filter} (ángulo ${angulo}°)");
-        } catch (error: any) {
-          console.error('❗ Error al cambiar el filtro:', error.message);
-        }
-      }
-    };
-
-    cambiarFiltro();
-  }, [capturedPhotos]);
-
-
   return (
-    <View style={styles.container}>
-      {/* Solo la cámara */}
-      <CameraView ref={cameraRef} facing={facing} style={styles.camera} />
+    <View className="flex-1 relative bg-black justify-center">
+      {/* 🟢 Feed de Video WebRTC */}
+      <View className="w-full aspect-video rounded-xl overflow-hidden">
+        {/* Label NoIR */}
+        <View className="absolute top-2 left-2 z-10 flex-row items-center bg-black/50 px-3 py-1 rounded-full border border-white/15">
+          <View className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2" />
+          <Text className="text-white text-xs font-semibold tracking-wide">Cámara NoIR</Text>
+        </View>
 
-      {/* Superposiciones */}
-      <MarcoGuia />
+        {streamError ? (
+          // Fallback
+          <View className="flex-1 bg-zinc-900 justify-center items-center gap-2">
+            <Ionicons name="videocam-off-outline" size={36} color="#71717a" />
+            <Text className="text-zinc-500 text-sm font-medium">Cámara no disponible</Text>
+            <Text className="text-zinc-600 text-xs">Verifica la conexión con la Raspberry Pi</Text>
+          </View>
+        ) : (
+          <WebView
+            source={{
+              html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            * { margin: 0; padding: 0; }
+            body { background: black; width: 100vw; height: 100vh; }
+            video { width: 100%; height: 100%; object-fit: cover; }
+          </style>
+        </head>
+        <body>
+          <video id="video" autoplay muted playsinline></video>
+          <script>
+            const pc = new RTCPeerConnection();
+            const video = document.getElementById('video');
 
+            // Timeout de 5 segundos
+            const timeout = setTimeout(() => {
+              window.ReactNativeWebView.postMessage('error');
+              pc.close();
+            }, 5000);
+
+            pc.addTransceiver('video', { direction: 'recvonly' });
+            pc.ontrack = (e) => {
+              clearTimeout(timeout); // Cancelar el timeout si conecta bien
+              video.srcObject = e.streams[0];
+            };
+
+            pc.createOffer().then(offer => {
+              pc.setLocalDescription(offer);
+              return fetch('${RASPBERRY_WHEP_URL}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/sdp' },
+                body: offer.sdp
+              });
+            }).then(r => r.text()).then(sdp => {
+              pc.setRemoteDescription({ type: 'answer', sdp });
+            }).catch(() => {
+              clearTimeout(timeout);
+              window.ReactNativeWebView.postMessage('error');
+            });
+          </script>
+        </body>
+        </html>
+      ` }}
+            originWhitelist={['*']}
+            mixedContentMode="always"
+            allowsInlineMediaPlayback={true}
+            mediaPlaybackRequiresUserAction={false}
+            javaScriptEnabled={true}
+            scrollEnabled={false}
+            style={{ flex: 1 }}
+            onMessage={(e) => {
+              if (e.nativeEvent.data === 'error') setStreamError(true);
+            }}
+            onError={() => setStreamError(true)}
+            startInLoadingState={true}
+            renderLoading={() => (
+              <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#22c55e" />
+                <Text className="text-[#a3a3a3] mt-3 text-sm">Conectando a cámara NoIR...</Text>
+              </View>
+            )}
+          />
+        )}
+      </View>
       <CargandoAnalisis visible={analizando} />
 
       {/* Barra superior */}
-      <View style={styles.topBar}>
+      <View className="absolute top-12 left-4 right-4 flex-row justify-between items-center">
         <Boton onPress={() => router.back()} ioniconName="arrow-back" iconSize={24} iconColor="white" />
-        <Boton
-          onPress={() => {
-            setShowInstructions(true);
-            Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
-          }}
-          ioniconName="help-circle-outline"
-          iconSize={24}
-          iconColor="white"
-        />
+
+        <View className="flex-row items-center bg-black/50 px-3 py-1 rounded-2xl border border-white/20">
+          <View className="w-2 h-2 rounded-full bg-red-500 mr-1.5" />
+          <Text className="text-white text-xs font-bold tracking-widest">LIVE</Text>
+        </View>
+
+        <View className="w-10" />
       </View>
 
-      {/* Previews */}
-      <View style={styles.previewContainer}>
-        {capturedPhotos.map((foto, i) => (
-          <PreviewImagen key={i} titulo={foto.filtro} uri={foto.uri} onCancel={() => cancelarFoto(i)} />
-        ))}
-      </View>
+      {/* Preview de la captura */}
+      {capturedPhoto && (
+        <View className="absolute bottom-28 left-0 right-0 items-center">
+          <PreviewImagen
+            titulo="Captura NoIR"
+            uri={capturedPhoto}
+            onCancel={cancelarFoto}
+          />
+        </View>
+      )}
 
       {/* Barra inferior */}
-      <View style={styles.bottomBar}>
-        <Boton onPress={toggleFacing} ioniconName="camera-reverse-outline" iconSize={24} iconColor="white" />
-        <TouchableOpacity onPress={takePicture} style={styles.shutter}>
-          <View style={styles.innerShutter} />
+      <View className="absolute bottom-4 left-0 right-0 flex-row justify-between items-center px-10 bg-black/40 py-2.5">
+        <View className="w-10" />
+
+        <TouchableOpacity
+          onPress={takePicture}
+          disabled={isCapturing || streamError}
+          className={`w-20 h-20 rounded-full border-4 justify-center items-center ${isCapturing || streamError ? 'border-white/20' : 'border-white/60'}`}
+        >
+          <View className={`w-16 h-16 rounded-full justify-center items-center ${isCapturing || streamError ? 'bg-white/20' : 'bg-white/70'}`}>
+            {isCapturing && <ActivityIndicator size="small" color="#000" />}
+          </View>
         </TouchableOpacity>
+
         <Boton
-          onPress={enviarFotos}
+          onPress={enviarFoto}
           ioniconName="checkmark-outline"
           iconSize={24}
-          iconColor={capturedPhotos.every(p => p.uri) ? 'white' : 'gray'}
+          iconColor="white"
+          disabled={!capturedPhoto}
         />
       </View>
-
-      {/* Instrucciones */}
-      {showInstructions && (
-        <Animated.View style={[styles.instructionsOverlay, { opacity: fadeAnim }]}>
-          <FlujoCaptura onClose={() => setShowInstructions(false)} />
-        </Animated.View>
-      )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    position: 'relative',
-    backgroundColor: 'black',
-  },
-  camera: {
-    flex: 1,
-  },
-  topBar: {
-    position: 'absolute',
-    top: 24,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  previewContainer: {
-    position: 'absolute',
-    bottom: 120,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 16,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  shutter: {
-    borderWidth: 4,
-    borderColor: 'rgba(255,255,255,0.6)',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  loaderContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#111',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  innerShutter: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(200,200,200,0.7)',
-  },
-  instructionsOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    zIndex: 10,
   },
 });

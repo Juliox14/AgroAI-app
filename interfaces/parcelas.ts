@@ -7,4 +7,5 @@ export interface Parcela {
   cultivos_asociados: string;
   tipo_riego: string;
   fecha_siembra?: string;
+  imagen_url?: string; // Nueva propiedad para la URL de la imagen
 }

@@ -8,14 +8,16 @@ type Props = {
     ioniconName: any;
     iconSize: number;
     iconColor: string;
+    disabled?: boolean;
 };
 
-const Boton = ({ onPress, ioniconName, iconSize, iconColor }: Props) => {
+const Boton = ({ onPress, ioniconName, iconSize, iconColor, disabled }: Props) => {
     const router = useRouter();
     return (
         <TouchableOpacity
             onPress={onPress}
-            className="bg-black/50 p-2 rounded-full"
+            className={`bg-black/50 p-2 rounded-full ${disabled ? 'opacity-50' : 'opacity-100'}`}
+            disabled={disabled}
         >
             <Ionicons name={ioniconName} size={iconSize} color={iconColor} />
         </TouchableOpacity>
