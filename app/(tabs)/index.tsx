@@ -102,12 +102,12 @@ export default function Index() {
   return (
     <>
       {session ? (
-        <SafeAreaView className="flex-1 bg-gray-100">
+        <SafeAreaView className="flex-1 bg-gray-100 dark:bg-gray-900">
 
           <LocationHeader locationName={locationName} />
 
           <View className="px-8 pt-4">
-            <Text className="text-3xl font-light text-gray-600">
+            <Text className="text-3xl font-light text-gray-600 dark:text-gray-300">
               Bienvenido, {payload?.nombre ? payload.nombre.split(' ')[0] : 'Productor'}!
             </Text>
           </View>
@@ -117,12 +117,12 @@ export default function Index() {
             <WeatherCard loading={loadingForecast} data={forecast} />
 
             {/* Tarjeta de cámara */}
-            <View className="bg-white rounded-2xl p-5 mb-4 mt-2 shadow flex-row">
+            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 mt-2 shadow flex-row">
               <View className="w-4/6 justify-center mb-2">
-                <Text className="text-lg font-semibold mb-1 text-gray-800">
+                <Text className="text-lg font-semibold mb-1 text-gray-800 dark:text-gray-100">
                   Calcular índice NDVI
                 </Text>
-                <Text className="text-sm text-gray-600 mb-4">
+                <Text className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                   Calcula la salud de tu cultivo convirtiendo este dispositivo
                   en un centro de control multiespectral.
                 </Text>
@@ -143,7 +143,7 @@ export default function Index() {
             </View>
 
             {/* Estado del cultivo */}
-            <View className="bg-white rounded-2xl p-5 mb-4 gap-6 shadow flex-row">
+            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 gap-6 shadow flex-row">
               <View className="flex-1 justify-center">
                 <Image
                   source={require('../../assets/images/sensor.png')}
@@ -151,10 +151,10 @@ export default function Index() {
                 />
               </View>
               <View className="w-4/6 justify-center mb-2">
-                <Text className="text-lg font-semibold mb-1 text-gray-800">
+                <Text className="text-lg font-semibold mb-1 text-gray-800 dark:text-gray-100">
                   Humedad del suelo
                 </Text>
-                <Text className="text-sm text-gray-600 mb-4">
+                <Text className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                   Monitorea el estado de la tierra en tiempo real
                   y recibe alertas cuando tu parcela necesite riego.
                 </Text>
@@ -169,16 +169,16 @@ export default function Index() {
             </View>
 
             {/* Información sobre NDVI */}
-            <View className="bg-white rounded-2xl p-5 pb-0 mb-8 shadow">
-              <Text className="text-lg font-semibold text-gray-800 mb-2">
+            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 pb-0 mb-8 shadow">
+              <Text className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
                 Conoce más sobre el NDVI
               </Text>
-              <Text className="text-sm text-gray-600">
+              <Text className="text-sm text-gray-600 dark:text-gray-300">
                 El Índice de Vegetación de Diferencia Normalizada (NDVI) es una métrica
                 que revela la salud de las plantas comparando la luz visible e
                 infrarroja. Valores cercanos a 1 indican vegetación sana.
               </Text>
-              <Text className="text-sm text-gray-600 mt-2">
+              <Text className="text-sm text-gray-600 dark:text-gray-300 mt-2">
                 Nuestro sistema marca zonas de estrés y anomalías para que puedas tomar
                 decisiones informadas sobre tu milpa.
               </Text>

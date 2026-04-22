@@ -6,15 +6,19 @@ import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useColorScheme } from 'nativewind';
 
 export default function LayoutTabs() {
 
     const { session } = useAuth();
+    const { colorScheme } = useColorScheme();
 
     return (
         <>
             {session ? (
                 <Tabs
+                // @ts-ignore - sceneContainerStyle is omitted from Expo Router types
+                sceneContainerStyle={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#f9fafb' }}
                 screenOptions={{
                     tabBarShowLabel: true,
                     tabBarItemStyle: {

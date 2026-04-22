@@ -88,36 +88,36 @@ export default function NuevaParcela() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <View className="px-6 py-4 flex-row items-center border-b border-gray-200 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-900">
+      <View className="px-6 py-4 flex-row items-center border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <BackButton />
-        <Text className="text-xl font-bold ml-4 text-green-900">Registrar Parcela</Text>
+        <Text className="text-xl font-bold ml-4 text-green-900 dark:text-green-400">Registrar Parcela</Text>
       </View>
 
       <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
         
         {/* SECCIÓN 1: Datos Básicos */}
         <Text className="text-gray-500 font-bold uppercase text-xs mb-3">Información Principal</Text>
-        <View className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6">
-          <Text className="text-gray-700 font-medium mb-1">Nombre del Terreno/Milpa *</Text>
+        <View className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
+          <Text className="text-gray-700 dark:text-gray-300 font-medium mb-1">Nombre del Terreno/Milpa *</Text>
           <TextInput 
-            className="border border-gray-300 rounded-xl p-3 text-gray-800 mb-4 bg-gray-50"
+            className="border border-gray-300 dark:border-gray-600 rounded-xl p-3 text-gray-800 dark:text-gray-100 mb-4 bg-gray-50 dark:bg-gray-700 placeholder:text-gray-400"
             placeholder="Ej. El terreno de arriba"
             value={nombre}
             onChangeText={setNombre}
           />
 
-          <Text className="text-gray-700 font-medium mb-1">Comunidad o Ejido</Text>
+          <Text className="text-gray-700 dark:text-gray-300 font-medium mb-1">Comunidad o Ejido</Text>
           <TextInput 
-            className="border border-gray-300 rounded-xl p-3 text-gray-800 mb-4 bg-gray-50"
+            className="border border-gray-300 dark:border-gray-600 rounded-xl p-3 text-gray-800 dark:text-gray-100 mb-4 bg-gray-50 dark:bg-gray-700 placeholder:text-gray-400"
             placeholder="Ej. Ejido San José"
             value={comunidadEjido}
             onChangeText={setComunidadEjido}
           />
 
-          <Text className="text-gray-700 font-medium mb-1">Área aproximada (Metros Cuadrados)</Text>
+          <Text className="text-gray-700 dark:text-gray-300 font-medium mb-1">Área aproximada (Metros Cuadrados)</Text>
           <TextInput 
-            className="border border-gray-300 rounded-xl p-3 text-gray-800 bg-gray-50"
+            className="border border-gray-300 dark:border-gray-600 rounded-xl p-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 placeholder:text-gray-400"
             placeholder="Ej. 5000"
             keyboardType="numeric"
             value={area}
@@ -127,40 +127,40 @@ export default function NuevaParcela() {
 
         {/* SECCIÓN 2: Detalles Agrícolas */}
         <Text className="text-gray-500 font-bold uppercase text-xs mb-3">Detalles de Siembra</Text>
-        <View className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-8">
+        <View className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
           
-          <Text className="text-gray-700 font-medium mb-2">Tipo de Sistema Agrícola</Text>
+          <Text className="text-gray-700 dark:text-gray-300 font-medium mb-2">Tipo de Sistema Agrícola</Text>
           <View className="flex-row flex-wrap gap-2 mb-4">
             {opcionesSistema.map((opcion) => (
               <TouchableOpacity 
                 key={opcion}
                 onPress={() => setTipoSistema(opcion)}
-                className={`px-3 py-2 rounded-lg border ${tipoSistema === opcion ? 'bg-green-100 border-green-600' : 'bg-gray-50 border-gray-200'}`}
+                className={`px-3 py-2 rounded-lg border ${tipoSistema === opcion ? 'bg-green-100 border-green-600 dark:bg-green-900/30 dark:border-green-500' : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600'}`}
               >
-                <Text className={tipoSistema === opcion ? 'text-green-800 font-medium' : 'text-gray-500'}>
+                <Text className={tipoSistema === opcion ? 'text-green-800 dark:text-green-300 font-medium' : 'text-gray-500 dark:text-gray-300'}>
                   {opcion}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <Text className="text-gray-700 font-medium mb-1">Cultivos Asociados (Plantas) *</Text>
+          <Text className="text-gray-700 dark:text-gray-300 font-medium mb-1">Cultivos Asociados (Plantas) *</Text>
           <TextInput 
-            className="border border-gray-300 rounded-xl p-3 text-gray-800 mb-4 bg-gray-50"
+            className="border border-gray-300 dark:border-gray-600 rounded-xl p-3 text-gray-800 dark:text-gray-100 mb-4 bg-gray-50 dark:bg-gray-700 placeholder:text-gray-400"
             placeholder="Ej. Maíz, frijol y calabaza"
             value={cultivosAsociados}
             onChangeText={setCultivosAsociados}
           />
 
-          <Text className="text-gray-700 font-medium mb-2">Método de Riego</Text>
+          <Text className="text-gray-700 dark:text-gray-300 font-medium mb-2">Método de Riego</Text>
           <View className="flex-row flex-wrap gap-2 mb-4">
             {opcionesRiego.map((opcion) => (
               <TouchableOpacity 
                 key={opcion}
                 onPress={() => setTipoRiego(opcion)}
-                className={`px-3 py-2 rounded-lg border ${tipoRiego === opcion ? 'bg-blue-100 border-blue-600' : 'bg-gray-50 border-gray-200'}`}
+                className={`px-3 py-2 rounded-lg border ${tipoRiego === opcion ? 'bg-blue-100 border-blue-600 dark:bg-blue-900/30 dark:border-blue-500' : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600'}`}
               >
-                <Text className={tipoRiego === opcion ? 'text-blue-800 font-medium' : 'text-gray-500'}>
+                <Text className={tipoRiego === opcion ? 'text-blue-800 dark:text-blue-300 font-medium' : 'text-gray-500 dark:text-gray-300'}>
                   {opcion}
                 </Text>
               </TouchableOpacity>
@@ -168,13 +168,13 @@ export default function NuevaParcela() {
           </View>
 
           {/* 🟢 Selector de Fecha de Siembra */}
-          <Text className="text-gray-700 font-medium mb-2">Fecha de Siembra</Text>
+          <Text className="text-gray-700 dark:text-gray-300 font-medium mb-2">Fecha de Siembra</Text>
           <TouchableOpacity 
             onPress={() => setShowDatePicker(true)}
-            className="flex-row items-center border border-gray-300 bg-gray-50 rounded-xl p-3"
+            className="flex-row items-center border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-xl p-3"
           >
             <Ionicons name="calendar-outline" size={20} color="#4B5563" />
-            <Text className="ml-2 text-gray-800">
+            <Text className="ml-2 text-gray-800 dark:text-gray-100">
               {fechaSiembra.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </Text>
           </TouchableOpacity>

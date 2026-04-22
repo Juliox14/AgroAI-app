@@ -54,9 +54,9 @@ export default function Parcelas() {
   if (!parcelas && !loading) return null;
 
   return (
-    <ScrollView className="bg-gray-50">
+    <ScrollView className="bg-gray-50 dark:bg-gray-900">
       <SafeAreaView className="flex-1 p-6">
-        <Text className="text-3xl font-bold mb-6 text-green-900 text-center">Mis Parcelas</Text>
+        <Text className="text-3xl font-bold mb-6 text-green-900 dark:text-green-400 text-center">Mis Parcelas</Text>
 
         {loading ? (
           <View className="flex-1 gap-6 mt-4">
@@ -67,12 +67,12 @@ export default function Parcelas() {
         ) : (
           <View className="flex-1 gap-6 mt-2">
             {(parcelas === null || parcelas === undefined || parcelas.length === 0) ? (
-              <View className="items-center justify-center mt-10 p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+              <View className="items-center justify-center mt-10 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <Ionicons name="map-outline" size={60} color="#9CA3AF" className="mb-4" />
-                <Text className="text-xl font-semibold text-gray-700 mb-2 text-center">
+                <Text className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2 text-center">
                   Aún no hay terrenos registrados
                 </Text>
-                <Text className="text-gray-500 text-center mb-6">
+                <Text className="text-gray-500 dark:text-gray-400 text-center mb-6">
                   Comienza agregando tu primera milpa o parcela para llevar el registro de su salud.
                 </Text>
                 <TouchableOpacity

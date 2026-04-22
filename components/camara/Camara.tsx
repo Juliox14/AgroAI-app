@@ -119,9 +119,9 @@ export default function Camara() {
           await axios.get(`http://192.168.12.101/move?angle=${angulo}`);
 
 
-          console.log("🛰️ Filtro cambiado a ${filter} (ángulo ${angulo}°)");
+          console.log(`Filtro cambiado a ${filter} (ángulo ${angulo}°)`);
         } catch (error: any) {
-          console.error('❗ Error al cambiar el filtro:', error.message);
+          console.log('Aviso: No se pudo conectar a la cámara ESP32 (Filtro no movido).', error.message);
         }
       }
     };
