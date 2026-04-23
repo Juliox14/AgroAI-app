@@ -29,19 +29,19 @@ const ParcelaCard = ({
     };
 
     return (
-        <TouchableOpacity onPress={handleAction} className="mb-4 px-4 py-4 rounded-xl bg-white shadow-md h-auto w-full">
+        <TouchableOpacity onPress={handleAction} className="mb-4 px-4 py-4 rounded-xl bg-white dark:bg-gray-800 shadow-md h-auto w-full">
             {/* Cabecera: Imagen, Nombre y Ubicación */}
-            <View className="flex-row w-full pb-4 border-b border-b-gray-200 items-center">
+            <View className="flex-row w-full pb-4 border-b border-b-gray-200 dark:border-b-gray-700 items-center">
                 <Image 
                     source={uriImagen ? { uri: uriImagen } : require("@/assets/images/aloe.png")} 
                     className="w-16 h-16 mr-4 rounded-lg border border-gray-300" 
                     resizeMode="cover"
                 />
                 <View className="flex-1 justify-center">
-                    <Text className="text-lg font-bold text-gray-800" numberOfLines={1}>
+                    <Text className="text-lg font-bold text-gray-800 dark:text-gray-100" numberOfLines={1}>
                         {parcela.nombre}
                     </Text>
-                    <Text className="text-sm text-gray-500 mt-1" numberOfLines={1}>
+                    <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1" numberOfLines={1}>
                         {parcela.tipo_sistema} • {parcela.comunidad_ejido || "Sin ubicación"}
                     </Text>
                 </View>
@@ -50,26 +50,26 @@ const ParcelaCard = ({
             {/* Fila de Datos Duros (Lo que realmente sabemos de la base de datos) */}
             <View className="flex-row flex-wrap mt-3 gap-2">
                 {/* Cultivos */}
-                <View className="flex-row items-center bg-green-50 px-2 py-1 rounded-md">
+                <View className="flex-row items-center bg-green-50 dark:bg-green-900/50 px-2 py-1 rounded-md">
                     <Ionicons name="leaf-outline" size={14} color="#15803d" />
-                    <Text className="text-xs text-green-800 ml-1 font-medium" numberOfLines={1} style={{ maxWidth: 100 }}>
+                    <Text className="text-xs text-green-800 dark:text-green-100 ml-1 font-medium" numberOfLines={1} style={{ maxWidth: 100 }}>
                         {parcela.cultivos_asociados || "Sin registro"}
                     </Text>
                 </View>
 
                 {/* Tipo de Riego */}
-                <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded-md">
+                <View className="flex-row items-center bg-blue-50 dark:bg-blue-900/50 px-2 py-1 rounded-md">
                     <Ionicons name="water-outline" size={14} color="#0369a1" />
-                    <Text className="text-xs text-blue-800 ml-1 font-medium">
+                    <Text className="text-xs text-blue-800 dark:text-blue-100 ml-1 font-medium">
                         {parcela.tipo_riego || "N/A"}
                     </Text>
                 </View>
 
                 {/* Área */}
                 {parcela.area_metros_cuadrados && (
-                    <View className="flex-row items-center bg-amber-50 px-2 py-1 rounded-md">
+                    <View className="flex-row items-center bg-amber-50 dark:bg-amber-900/50 px-2 py-1 rounded-md">
                         <Ionicons name="scan-outline" size={14} color="#b45309" />
-                        <Text className="text-xs text-amber-800 ml-1 font-medium">
+                        <Text className="text-xs text-amber-800 dark:text-amber-100 ml-1 font-medium">
                             {parcela.area_metros_cuadrados} m²
                         </Text>
                     </View>
@@ -77,14 +77,14 @@ const ParcelaCard = ({
             </View>
 
             {/* El único indicador analítico real: NDVI */}
-            <View className="flex-row justify-between items-center mt-4 pt-3 border-t border-t-gray-100">
-                <Text className="text-sm text-gray-500 font-medium">
+            <View className="flex-row justify-between items-center mt-4 pt-3 border-t border-t-gray-100 dark:border-t-gray-700">
+                <Text className="text-sm text-gray-500 dark:text-gray-400 font-medium">
                     Último análisis NDVI:
                 </Text>
                 {ultimoNDVI !== undefined ? (
                     <View className="flex-row items-center">
                         <View className={`w-3 h-3 rounded-full ${obtenerColorNDVI(ultimoNDVI)} mr-2`} />
-                        <Text className="text-sm font-bold text-gray-700">{ultimoNDVI.toFixed(2)}</Text>
+                        <Text className="text-sm font-bold text-gray-700 dark:text-gray-200">{ultimoNDVI.toFixed(2)}</Text>
                         <Text className="text-xs text-gray-400 ml-2">({fechaUltimoEscaneo})</Text>
                     </View>
                 ) : (

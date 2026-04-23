@@ -46,14 +46,14 @@ export default function Parcelas() {
   if (!parcelas && !loading) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-900">
 
       {/* ── Header ── */}
-      <View className="px-5 pt-4 pb-4 bg-white border-b border-green-100 shadow-sm">
+      <View className="px-5 pt-4 pb-4 bg-white dark:bg-gray-900 border-b border-green-100 dark:border-gray-800 shadow-sm">
         <View className="flex-row items-center justify-between">
           <View>
-            <Text className="text-2xl font-bold text-green-950 tracking-tight">Mis Parcelas</Text>
-            <Text className="text-xs font-medium text-green-400 mt-0.5">
+            <Text className="text-2xl font-bold text-green-950 dark:text-gray-100 tracking-tight">Mis Parcelas</Text>
+            <Text className="text-xs font-medium text-green-400 dark:text-green-300 mt-0.5">
               {!loading && `${parcelas.length} terreno${parcelas.length !== 1 ? 's' : ''} registrado${parcelas.length !== 1 ? 's' : ''}`}
             </Text>
           </View>
@@ -61,7 +61,7 @@ export default function Parcelas() {
           {/* Botón añadir — visible siempre en el header */}
           <TouchableOpacity
             onPress={handleAddParcela}
-            className="flex-row items-center bg-green-700 px-4 py-2.5 rounded-xl"
+            className="flex-row items-center bg-green-700 dark:bg-green-600 px-4 py-2.5 rounded-xl"
             activeOpacity={0.8}
             style={{ shadowColor: '#14532D', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.2, shadowRadius: 6, elevation: 4 }}
           >
@@ -74,7 +74,7 @@ export default function Parcelas() {
       <ScrollView className="flex-1 px-5 pt-5" showsVerticalScrollIndicator={false}>
 
         {loading ? (
-          <View className="gap-4">
+          <View key="loading" className="gap-4">
             {[...Array(3)].map((_, i) => (
               <ParcelaCardSkeleton key={`skeleton-${i}`} />
             ))}
@@ -82,14 +82,14 @@ export default function Parcelas() {
         ) : parcelas.length === 0 ? (
 
           /* ── Empty state ── */
-          <View className="items-center justify-center mt-16 p-8 bg-white rounded-3xl border border-green-100 shadow-sm">
-            <View className="w-20 h-20 rounded-full bg-green-50 items-center justify-center mb-5">
+          <View key="empty" className="items-center justify-center mt-16 p-8 bg-white dark:bg-gray-800 rounded-3xl border border-green-100 dark:border-gray-700 shadow-sm">
+            <View className="w-20 h-20 rounded-full bg-green-50 dark:bg-gray-700 items-center justify-center mb-5">
               <Ionicons name="map-outline" size={40} color="#86EFAC" />
             </View>
-            <Text className="text-xl font-bold text-green-950 mb-2 text-center">
+            <Text className="text-xl font-bold text-green-950 dark:text-gray-100 mb-2 text-center">
               Sin terrenos aún
             </Text>
-            <Text className="text-sm text-gray-400 text-center leading-5 mb-8">
+            <Text className="text-sm text-gray-400 dark:text-gray-300 text-center leading-5 mb-8">
               Registra tu primera milpa o parcela para comenzar a monitorear su salud.
             </Text>
             <TouchableOpacity
@@ -108,7 +108,7 @@ export default function Parcelas() {
         ) : (
 
           /* ── Lista de parcelas ── */
-          <View className="gap-4 pb-10">
+          <View key="list" className="gap-4 pb-10">
             {parcelas.map((item) => (
               <ParcelaCard
                 key={item.id}
@@ -124,7 +124,7 @@ export default function Parcelas() {
             {/* Botón añadir al final de la lista */}
             <TouchableOpacity
               onPress={handleAddParcela}
-              className="flex-row items-center justify-center border-2 border-dashed border-green-200 rounded-2xl py-4 bg-green-50"
+              className="flex-row items-center justify-center border-2 border-dashed border-green-200 dark:border-gray-700 rounded-2xl py-4 bg-green-50 dark:bg-gray-800"
               activeOpacity={0.7}
             >
               <Ionicons name="add-circle-outline" size={20} color="#86EFAC" />

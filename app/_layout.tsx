@@ -1,30 +1,30 @@
 import { Stack } from "expo-router";
 import { AuthProvider } from "@/context/AuthContext";
-import './globals.css';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from 'nativewind';
-
-const customDarkTheme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    background: '#111827', // Tailwind gray-900
-  },
-};
+import './globals.css';
 
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();
 
+  const CustomDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: '#111827', // Tailwind gray-900
+    },
+  };
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : DefaultTheme}>
       <AuthProvider>
-      <Stack>
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown: false,
-          }}
-        />
+        <Stack>
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: false,
+            }}
+          />
         <Stack.Screen
           name="login"
           options={{

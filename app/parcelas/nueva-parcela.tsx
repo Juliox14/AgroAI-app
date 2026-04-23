@@ -104,14 +104,14 @@ export default function NuevaParcela() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
 
       {/* ── Header ── */}
-      <View className="px-5 py-4 flex-row items-center bg-white border-b border-gray-100 shadow-sm">
+      <View className="px-5 py-4 flex-row items-center bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm">
         <BackButton />
         <View className="ml-3">
-          <Text className="text-lg font-bold text-green-950 tracking-tight">Registrar Parcela</Text>
-          <Text className="text-xs font-medium text-green-400 mt-0.5">Nueva unidad de cultivo</Text>
+          <Text className="text-lg font-bold text-green-950 dark:text-gray-100 tracking-tight">Registrar Parcela</Text>
+          <Text className="text-xs font-medium text-green-400 dark:text-green-300 mt-0.5">Nueva unidad de cultivo</Text>
         </View>
       </View>
 
@@ -120,13 +120,13 @@ export default function NuevaParcela() {
         {/* ── Sección 1 ── */}
         <SectionLabel icon="leaf-outline" label="Información Principal" />
 
-        <View className="bg-white rounded-2xl border border-gray-100 p-4 mb-6 shadow-sm">
+        <View className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 mb-6 shadow-sm">
           
           {/* 👇 Nuevo Selector de Imagen de Portada */}
           <FieldLabel text="Foto de la Parcela (Opcional)" />
           <TouchableOpacity 
             onPress={seleccionarImagen}
-            className="mb-6 rounded-xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 items-center justify-center h-40"
+            className="mb-6 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-700 border-2 border-dashed border-gray-200 dark:border-gray-600 items-center justify-center h-40"
           >
             {imagenUri ? (
               <>
@@ -145,7 +145,7 @@ export default function NuevaParcela() {
 
           <FieldLabel text="Nombre del Terreno / Milpa" required />
           <TextInput
-            className="border-2 border-gray-100 rounded-xl px-4 py-3 text-green-950 bg-white mb-4"
+            className="border-2 border-gray-100 dark:border-gray-700 rounded-xl px-4 py-3 text-green-950 dark:text-gray-100 bg-white dark:bg-gray-800 mb-4"
             placeholder="Ej. El terreno de arriba"
             placeholderTextColor="#9CA3AF"
             value={nombre}
@@ -154,7 +154,7 @@ export default function NuevaParcela() {
 
           <FieldLabel text="Comunidad o Ejido" />
           <TextInput
-            className="border-2 border-gray-100 rounded-xl px-4 py-3 text-green-950 bg-white mb-4"
+            className="border-2 border-gray-100 dark:border-gray-700 rounded-xl px-4 py-3 text-green-950 dark:text-gray-100 bg-white dark:bg-gray-800 mb-4"
             placeholder="Ej. Ejido San José"
             placeholderTextColor="#9CA3AF"
             value={comunidadEjido}
@@ -163,7 +163,7 @@ export default function NuevaParcela() {
 
           <FieldLabel text="Área aproximada (m²)" />
           <TextInput
-            className="border-2 border-gray-100 rounded-xl px-4 py-3 text-green-950 bg-white"
+            className="border-2 border-gray-100 dark:border-gray-700 rounded-xl px-4 py-3 text-green-950 dark:text-gray-100 bg-white dark:bg-gray-800"
             placeholder="Ej. 5000"
             placeholderTextColor="#9CA3AF"
             keyboardType="numeric"
@@ -175,7 +175,7 @@ export default function NuevaParcela() {
         {/* ── Sección 2 (Detalles de Siembra) ── */}
         <SectionLabel icon="nutrition-outline" label="Detalles de Siembra" />
 
-        <View className="bg-white rounded-2xl border border-gray-100 p-4 mb-8 shadow-sm">
+        <View className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 mb-8 shadow-sm">
 
           {/* Sistema agrícola */}
           <FieldLabel text="Tipo de Sistema Agrícola" />
@@ -187,11 +187,11 @@ export default function NuevaParcela() {
                   key={opcion}
                   onPress={() => setTipoSistema(opcion)}
                   className={`px-4 py-2 rounded-full border-2 ${
-                    active ? 'bg-green-100 border-green-500' : 'bg-white border-gray-100'
+                    active ? 'bg-green-100 dark:bg-green-900 border-green-500' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'
                   }`}
                   activeOpacity={0.7}
                 >
-                  <Text className={`text-sm ${active ? 'text-green-800 font-semibold' : 'text-gray-400'}`}>
+                  <Text className={`text-sm ${active ? 'text-green-800 dark:text-green-300 font-semibold' : 'text-gray-400 dark:text-gray-300'}`}>
                     {opcion}
                   </Text>
                 </TouchableOpacity>
@@ -202,7 +202,7 @@ export default function NuevaParcela() {
           {/* Cultivos */}
           <FieldLabel text="Cultivos Asociados (Plantas)" required />
           <TextInput
-            className="border-2 border-gray-100 rounded-xl px-4 py-3 text-green-950 bg-white mb-4"
+            className="border-2 border-gray-100 dark:border-gray-700 rounded-xl px-4 py-3 text-green-950 dark:text-gray-100 bg-white dark:bg-gray-800 mb-4"
             placeholder="Ej. Maíz, frijol y calabaza"
             placeholderTextColor="#9CA3AF"
             value={cultivosAsociados}
@@ -219,11 +219,11 @@ export default function NuevaParcela() {
                   key={opcion}
                   onPress={() => setTipoRiego(opcion)}
                   className={`px-4 py-2 rounded-full border-2 ${
-                    active ? 'bg-blue-100 border-blue-500' : 'bg-blue-50 border-blue-100'
+                    active ? 'bg-blue-100 dark:bg-blue-900 border-blue-500' : 'bg-blue-50 dark:bg-gray-800 border-blue-100 dark:border-gray-700'
                   }`}
                   activeOpacity={0.7}
                 >
-                  <Text className={`text-sm ${active ? 'text-blue-800 font-semibold' : 'text-gray-400'}`}>
+                  <Text className={`text-sm ${active ? 'text-blue-800 dark:text-blue-300 font-semibold' : 'text-gray-400 dark:text-gray-300'}`}>
                     {opcion}
                   </Text>
                 </TouchableOpacity>
@@ -235,15 +235,15 @@ export default function NuevaParcela() {
           <FieldLabel text="Fecha de Siembra" />
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
-            className="flex-row items-center border-2 border-gray-100 rounded-xl p-3 bg-white"
+            className="flex-row items-center border-2 border-gray-100 dark:border-gray-700 rounded-xl p-3 bg-white dark:bg-gray-800"
             activeOpacity={0.7}
           >
-            <View className="w-9 h-9 rounded-xl bg-green-100 items-center justify-center mr-3">
+            <View className="w-9 h-9 rounded-xl bg-green-100 dark:bg-green-900 items-center justify-center mr-3">
               <Ionicons name="calendar-outline" size={18} color="#15803D" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-medium text-green-400">Fecha seleccionada</Text>
-              <Text className="text-sm font-semibold text-green-950 mt-0.5">
+              <Text className="text-xs font-medium text-green-400 dark:text-green-300">Fecha seleccionada</Text>
+              <Text className="text-sm font-semibold text-green-950 dark:text-gray-100 mt-0.5">
                 {fechaSiembra.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </Text>
             </View>
@@ -313,7 +313,7 @@ function SectionLabel({ icon, label }: { icon: string; label: string }) {
 function FieldLabel({ text, required }: { text: string; required?: boolean }) {
   return (
     <View className="flex-row mb-1.5">
-      <Text className="text-sm font-semibold text-gray-700">{text}</Text>
+      <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">{text}</Text>
       {required && <Text className="text-sm text-green-600 ml-0.5">*</Text>}
     </View>
   );

@@ -1,19 +1,19 @@
 // components/BackButton.tsx
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 import { useColorScheme } from 'nativewind';
 
 const BackButton = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
   const { colorScheme } = useColorScheme();
 
   return (
     <View>
       <TouchableOpacity
-        onPress={() => navigation.goBack()}
+        onPress={() => router.back()}
         className="w-10 h-10 items-center justify-center  bg-transparent "
         activeOpacity={0.7}
       >

@@ -11,7 +11,7 @@ import Boton from './Boton';
 import PreviewImagen from './PreviewImagen';
 import CargandoAnalisis from '../Analizando';
 
-const RASPBERRY_IP = process.env.EXPO_PUBLIC_RASPBERRY_IP;
+const RASPBERRY_IP = process.env.EXPO_PUBLIC_RASPBERRY_IP_ADDRESS;
 const RASPBERRY_WHEP_URL = `http://${RASPBERRY_IP}:8889/camara_noir/whep`;
 const RASPBERRY_SNAPSHOT_URL = 'http://${process.env.RASPBERRY_PUBLIC_IP_ADDRESS}:5000/capturar';
 

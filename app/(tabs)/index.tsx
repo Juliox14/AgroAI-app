@@ -88,8 +88,11 @@ export default function Index() {
           setForecast(resp.data.data);
         }
 
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error al cargar el clima:", err);
+        if (err.isAxiosError && err.response) {
+          console.error("Detalle del error del servidor:", err.response.data);
+        }
         Alert.alert('Error', 'No se pudo obtener el pronóstico del clima en este momento.');
       } finally {
         setLoading(false);
