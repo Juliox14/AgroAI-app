@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
+import {
+  View,
+  Text,
+  TextInput,
   Alert,
-  TouchableOpacity, 
+  TouchableOpacity,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -23,29 +23,46 @@ const RegistroScreen = () => {
 
   const router = useRouter();
 
-  const handleRegistro = async() => {
+  const handleRegistro = async () => {
+    // 1. Validación inicial
     if (!name || !email || !password) {
       Alert.alert('Error', 'Por favor, completa todos los campos');
       return;
     }
 
-    const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ nombre: name, email, password })
-    });
+    const url = `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3001/api/auth/register`;
 
-    const data = await res.json();
+    try {
+      // 2. Intento de petición al servidor
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nombre: name, email, password })
+      });
 
-    if (res.ok) {
-      Alert.alert('Éxito', 'Registro exitoso!');
-      router.push("/login");
-    } else {
-      Alert.alert('Error', data.body.message);
+      // 3. Parsear el JSON (aquí es donde fallaba antes si la respuesta era inesperada)
+      const data = await res.json();
+
+      if (res.ok) {
+        // Registro exitoso
+        Alert.alert('Éxito', '¡Registro exitoso!');
+        router.push("/login");
+      } else {
+        // Manejo de errores del servidor (400, 401, 500, etc.)
+        // Buscamos el mensaje en varios lugares posibles del JSON
+        const errorMsg = data?.mensaje || data?.body?.mensaje || 'Error al registrar el usuario';
+        Alert.alert('Error', errorMsg);
+      }
+    } catch (error) {
+      // 4. Manejo de errores de red o del cliente
+      console.error("Error en la petición:", error);
+      Alert.alert(
+        'Error de conexión', 
+        'No se pudo conectar con el servidor. Verifica que tu API esté encendida y la IP sea correcta.'
+      );
     }
-
   };
 
   return (
@@ -56,20 +73,21 @@ const RegistroScreen = () => {
         className="flex-1"
       >
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
-          {/* Header con logo - Ajustado para estar más centrado y más grande */}
+          {/* Header con logo */}
           <View className="flex items-center justify-center mb-6 mt-4">
-            <Image 
-              source={require('../assets/images/AgroAI-letters.png')} 
+            <Image
+              source={require('../assets/images/AgroAI-letters.png')}
               className="h-14 w-48"
               resizeMode="contain"
             />
           </View>
-          
+
           {/* Contenido de registro */}
           <View className="p-4">
             <View className="bg-white rounded-xl p-6 shadow-sm mb-4">
               <Text className="text-2xl font-bold text-gray-800 mb-6">Registro de usuario</Text>
-              {/* Campo de name */}
+              
+              {/* Campo de nombre */}
               <View className="mb-4">
                 <Text className="text-gray-700 mb-2 font-medium">Nombre</Text>
                 <View className="bg-gray-100 rounded-lg flex-row items-center px-3 border border-gray-200">
@@ -82,7 +100,7 @@ const RegistroScreen = () => {
                   />
                 </View>
               </View>
-              
+
               {/* Campo de email */}
               <View className="mb-4">
                 <Text className="text-gray-700 mb-2 font-medium">Correo electrónico</Text>
@@ -98,7 +116,7 @@ const RegistroScreen = () => {
                   />
                 </View>
               </View>
-              
+
               {/* Campo de contraseña */}
               <View className="mb-6">
                 <Text className="text-gray-700 mb-2 font-medium">Contraseña</Text>
@@ -112,23 +130,23 @@ const RegistroScreen = () => {
                     secureTextEntry={!showPassword}
                   />
                   <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    <Ionicons 
-                      name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                      size={20} 
-                      color="#666" 
+                    <Ionicons
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={20}
+                      color="#666"
                     />
                   </TouchableOpacity>
                 </View>
               </View>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 className="bg-green-700 rounded-lg py-4 items-center"
                 onPress={handleRegistro}
               >
                 <Text className="text-white font-bold text-lg">Crear cuenta</Text>
               </TouchableOpacity>
             </View>
-            
+
             {/* Enlace para iniciar sesión */}
             <View className="bg-white rounded-xl p-6 shadow-sm flex-row justify-center">
               <Text className="text-gray-600">¿Ya tienes una cuenta? </Text>
