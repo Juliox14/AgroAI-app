@@ -17,27 +17,27 @@ export default function LayoutTabs() {
         <>
             {session ? (
                 <Tabs
-                // @ts-ignore - sceneContainerStyle is omitted from Expo Router types
-                sceneContainerStyle={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#f9fafb' }}
-                screenOptions={{
-                    tabBarShowLabel: true,
-                    tabBarItemStyle: {
-                        width: '100%',
-                        height: "100%",
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginTop: 10,
-    
-                    },
-                    tabBarStyle: {
-                        backgroundColor: '#111727',
-                        borderTopLeftRadius: 30,
-                        borderTopRightRadius: 30,
-                        height: 80,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                    }
-                }}>
+                    // @ts-ignore - sceneContainerStyle is omitted from Expo Router types
+                    sceneContainerStyle={{ backgroundColor: colorScheme === 'dark' ? '#111827' : '#f9fafb' }}
+                    screenOptions={{
+                        tabBarShowLabel: true,
+                        tabBarItemStyle: {
+                            width: '100%',
+                            height: "100%",
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginTop: 10,
+
+                        },
+                        tabBarStyle: {
+                            backgroundColor: '#111727',
+                            borderTopLeftRadius: 30,
+                            borderTopRightRadius: 30,
+                            height: 80,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }
+                    }}>
                     <Tabs.Screen
                         name="index"
                         options={{
@@ -66,9 +66,9 @@ export default function LayoutTabs() {
                             )
                         }}
                     />
-                    
+
                     <Tabs.Screen
-                        name="camara/index"
+                        name="camara/calibracion"
                         options={{
                             title: ' ',
                             headerShown: false,
@@ -82,11 +82,19 @@ export default function LayoutTabs() {
                                     />
                                 </View>
                             ),
-    
+
                         }}
                     />
-    
-                    
+
+                    <Tabs.Screen
+                        name="camara/index"
+                        options={{
+                            href: null,
+                            headerShown: false,
+                        }}
+                    />
+
+
                     <Tabs.Screen
                         name="tierra"
                         options={{
@@ -101,7 +109,7 @@ export default function LayoutTabs() {
                             )
                         }}
                     />
-    
+
                     <Tabs.Screen
                         name="configuracion"
                         options={{
@@ -117,7 +125,7 @@ export default function LayoutTabs() {
                         }}
                     />
                 </Tabs>
-            ): (
+            ) : (
                 <Redirect href="/login" />
             )}
         </>
