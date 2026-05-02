@@ -39,7 +39,7 @@ export default function RootLayout() {
         />
 
         <Stack.Screen
-          name="results/NDVIResult"
+          name="resultados/NDVIResultado"
           options={{
             headerShown: false,
 
@@ -58,6 +58,12 @@ export default function RootLayout() {
           options={{ headerShown: false }}
         />
 
+        <Stack.Screen
+        name="resultados/SeleccionarParcela"
+          options={{ headerShown: false }}
+        />
+
+          
       </Stack>
       </AuthProvider>
     </ThemeProvider>
