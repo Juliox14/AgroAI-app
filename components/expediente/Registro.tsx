@@ -1,6 +1,6 @@
 import { RegistroComponentProps } from "@/interfaces/components";
 import ZoomableImage from "../ZoomableImage";
-import Result from "../Result";
+import Result from "../Resultado";
 import { View, StyleSheet } from "react-native";
 import AccordionItem from "../AccordionItem";
 
