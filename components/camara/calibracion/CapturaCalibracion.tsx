@@ -6,35 +6,41 @@ import { WebView } from 'react-native-webview';
 
 const { width, height } = Dimensions.get('window');
 
-const MARCO_WIDTH  = width * 0.75;
+const MARCO_WIDTH = width * 0.75;
 const MARCO_HEIGHT = MARCO_WIDTH * 1.5; // proporción 2x3 del tablero
-const CELDA_W      = MARCO_WIDTH / 2;
-const CELDA_H      = MARCO_HEIGHT / 3;
+const CELDA_W = MARCO_WIDTH / 2;
+const CELDA_H = MARCO_HEIGHT / 3;
 
 const RASPBERRY_IP = process.env.EXPO_PUBLIC_RASPBERRY_IP_ADDRESS;
-const WHEP_RGB     = `http://${RASPBERRY_IP}:8889/camara_rgb/whep`;
+const WHEP_RGB = `http://${RASPBERRY_IP}:8889/camara_rgb/whep`;
 const CALIBRAR_URL = `http://${RASPBERRY_IP}:5000/calibrar`;
 
 const COLORES = [
-  { id: 1, nombre: 'Blanco',       color: '#f5f5f5' },
-  { id: 2, nombre: 'Arena',        color: '#c2a97a' },
-  { id: 3, nombre: 'Café',         color: '#5c3d1e' },
+  { id: 1, nombre: 'Blanco', color: '#f5f5f5' },
+  { id: 2, nombre: 'Arena', color: '#c2a97a' },
+  { id: 3, nombre: 'Café', color: '#5c3d1e' },
   { id: 4, nombre: 'Indian Birch', color: '#b07848' },
   { id: 5, nombre: 'Verde Bosque', color: '#2d5a1b' },
-  { id: 6, nombre: 'Vino',         color: '#6b1a2a' },
+  { id: 6, nombre: 'Vino', color: '#6b1a2a' },
 ];
 
 type Estado = 'esperando' | 'calibrando' | 'listo' | 'error';
 
 interface Props {
   onCalibrado: () => void;
-  onCancelar:  () => void;
+  onCancelar: () => void;
 }
 
 export default function CapturaCalibración({ onCalibrado, onCancelar }: Props) {
   const [streamError, setStreamError] = useState(false);
-  const [estado,      setEstado]      = useState<Estado>('esperando');
-  const [errorMsg,    setErrorMsg]    = useState('');
+  const [estado, setEstado] = useState<Estado>('esperando');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [streamKey, setStreamKey] = useState(0);
+
+  const reconectarStream = () => {
+    setStreamError(false);
+    setStreamKey(k => k + 1); // fuerza remontar el WebView
+  };
 
   const calibrar = async () => {
     setEstado('calibrando');
@@ -72,12 +78,20 @@ export default function CapturaCalibración({ onCalibrado, onCancelar }: Props) 
 
       {/* Stream RGB a pantalla completa */}
       {streamError ? (
-        <View className="flex-1 justify-center items-center gap-3">
+        <View className="flex-1 justify-center items-center gap-4">
           <Ionicons name="videocam-off-outline" size={40} color="#71717a" />
           <Text className="text-zinc-500 text-sm">Stream RGB no disponible</Text>
+          <TouchableOpacity
+            onPress={reconectarStream}
+            className="flex-row items-center gap-2 bg-zinc-800 px-5 py-3 rounded-full border border-white/20"
+          >
+            <Ionicons name="refresh-outline" size={18} color="white" />
+            <Text className="text-white text-sm font-semibold">Reconectar</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <WebView
+          key={streamKey}
           source={{
             html: `
               <!DOCTYPE html><html>
@@ -117,6 +131,17 @@ export default function CapturaCalibración({ onCalibrado, onCancelar }: Props) 
           onError={() => setStreamError(true)}
         />
       )}
+
+      {/* Botón reconectar flotante cuando el stream está activo */}
+      {!streamError && (
+        <TouchableOpacity
+          onPress={reconectarStream}
+          className="absolute top-12 left-4 z-20 bg-black/50 p-2 rounded-full border border-white/20"
+        >
+          <Ionicons name="refresh-outline" size={22} color="white" />
+        </TouchableOpacity>
+      )}
+
 
       {/* Marco guía 2x3 sobre el stream */}
       <View style={styles.marcoContainer} pointerEvents="none">

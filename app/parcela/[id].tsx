@@ -122,7 +122,7 @@ export default function DetalleParcela() {
             <TouchableOpacity
               key={registro.id}
               className="bg-white rounded-2xl p-4 mb-4 flex-row items-center shadow-sm"
-              onPress={() => router.push({ pathname: "/results/NDVIResult", params: { registroId: registro.id } })}
+              onPress={() => router.push({ pathname: "/resultados/NDVIResultado", params: { registroId: registro.id } })}
             >
               <Image
                 source={{ uri: registro.s3_imagen_url }}

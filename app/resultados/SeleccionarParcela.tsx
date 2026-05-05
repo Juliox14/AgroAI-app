@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 const RASPBERRY_IP = process.env.EXPO_PUBLIC_RASPBERRY_IP_ADDRESS;
 const BACKEND_IP = process.env.EXPO_PUBLIC_IP_ADDRESS;
 const COLORMAP_URL = `http://${RASPBERRY_IP}:5000/ndvi/colormap`;
-const PARCELAS_URL = `http://${BACKEND_IP}:3000/api/obtenerParcelas`;
+const PARCELAS_URL = `http://${BACKEND_IP}:3000/api/parcelas`;
 const GUARDAR_URL = `http://${BACKEND_IP}:3000/api/ndvi/guardar`;
 
 export default function SeleccionarParcela() {
