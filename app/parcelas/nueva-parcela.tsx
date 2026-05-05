@@ -7,10 +7,12 @@ import { useAuth } from '@/context/AuthContext';
 import BackButton from '@/components/BackButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
+import NetInfo from '@react-native-community/netinfo';
+import { encolarItem } from '@/utils/db';
 
 export default function NuevaParcela() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, payload } = useAuth();
 
   const [nombre, setNombre] = useState('');
   const [comunidadEjido, setComunidadEjido] = useState('');
@@ -19,10 +21,7 @@ export default function NuevaParcela() {
   const [cultivosAsociados, setCultivosAsociados] = useState('');
   const [tipoRiego, setTipoRiego] = useState('Temporal');
   const [fechaSiembra, setFechaSiembra] = useState(new Date());
-  
-  // 👇 Nuevo estado para la imagen de portada
   const [imagenUri, setImagenUri] = useState<string | null>(null);
-  
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -34,15 +33,13 @@ export default function NuevaParcela() {
     if (selectedDate) setFechaSiembra(selectedDate);
   };
 
-  // 👇 Función para abrir la galería
   const seleccionarImagen = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [16, 9],
-      quality: 0.8, // Comprimimos un poco para no saturar la RAM
+      quality: 0.8,
     });
-
     if (!result.canceled) {
       setImagenUri(result.assets[0].uri);
     }
@@ -50,55 +47,103 @@ export default function NuevaParcela() {
 
   const handleGuardar = async () => {
     if (!nombre.trim() || !cultivosAsociados.trim()) {
-      Alert.alert('Campos incompletos', 'Por favor ingresa al menos el nombre de la parcela y los cultivos que tiene.');
+      Alert.alert('Campos incompletos', 'Por favor ingresa al menos el nombre y los cultivos.');
       return;
     }
+
     setLoading(true);
-    
+
     try {
-      // 👇 1. Creamos el FormData en lugar del JSON
-      const formData = new FormData();
-      formData.append('nombre', nombre);
-      formData.append('comunidad_ejido', comunidadEjido);
-      formData.append('area_metros_cuadrados', area || '');
-      formData.append('tipo_sistema', tipoSistema);
-      formData.append('cultivos_asociados', cultivosAsociados);
-      formData.append('tipo_riego', tipoRiego);
-      formData.append('fecha_siembra', fechaSiembra.toISOString());
+      const red = await NetInfo.fetch();
 
-      // 👇 2. Si el usuario seleccionó una imagen, la adjuntamos
-      if (imagenUri) {
-        formData.append('imagen', {
-          uri: imagenUri,
-          name: 'portada_parcela.jpg',
-          type: 'image/jpeg',
-        } as any);
-      }
+      // Para enviar al backend (con número)
+      const payloadBackend = {
+        nombre,
+        comunidad_ejido: comunidadEjido,
+        area_metros_cuadrados: area ? parseFloat(area) : null,
+        tipo_sistema: tipoSistema,
+        cultivos_asociados: cultivosAsociados,
+        tipo_riego: tipoRiego,
+        fecha_siembra: fechaSiembra.toISOString(),
+        ...(payload?.id ? { usuarioId: payload.id.toString() } : {}),
+      };
 
-      // 👇 3. Enviamos la petición
-      // NOTA CRÍTICA: No pongas 'Content-Type': 'multipart/form-data'. 
-      // Fetch lo calcula automáticamente y le agrega el "boundary" necesario.
-      const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`, {
-        method: 'POST',
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        },
-        body: formData,
-      });
+      // Para la cola SQLite (todo string)
+      const payloadCola: Record<string, string> = {
+        nombre,
+        comunidad_ejido: comunidadEjido,
+        area_metros_cuadrados: area || '',
+        tipo_sistema: tipoSistema,
+        cultivos_asociados: cultivosAsociados,
+        tipo_riego: tipoRiego,
+        fecha_siembra: fechaSiembra.toISOString(),
+        ...(payload?.id ? { usuarioId: payload.id.toString() } : {}),
+      };
 
-      const json = await res.json();
-      
-      if (json.success) {
-        Alert.alert('¡Éxito!', 'La parcela se ha registrado correctamente.', [
-          { text: 'OK', onPress: () => router.push('/(tabs)/parcelas') },
-        ]);
+      if (red.isConnected) {
+        let res;
+
+        if (imagenUri) {
+          // Con imagen: multipart/form-data para que multer procese el archivo
+          const formData = new FormData();
+          for (const [k, v] of Object.entries(payloadBackend)) {
+            if (v !== null && v !== undefined) formData.append(k, String(v));
+          }
+          formData.append('imagen', {
+            uri: imagenUri,
+            name: 'portada_parcela.jpg',
+            type: 'image/jpeg',
+          } as any);
+
+          res = await fetch(
+            `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`,
+            {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}` },
+              body: formData,
+            }
+          );
+        } else {
+          // Sin imagen: JSON normal
+          res = await fetch(
+            `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(payloadBackend),
+            }
+          );
+        }
+
+        const json = await res.json();
+
+        if (json.success) {
+          Alert.alert('¡Éxito!', 'La parcela se ha registrado correctamente.', [
+            { text: 'OK', onPress: () => router.push('/(tabs)/parcelas') },
+          ]);
+        } else {
+          Alert.alert('Error del servidor', json.message || 'No se pudo guardar la parcela.');
+        }
+
       } else {
-        Alert.alert('Error', json.message || 'No se pudo guardar la parcela.');
+        encolarItem('nueva_parcela', payloadCola, imagenUri ?? '');
+        Alert.alert(
+          'Guardado sin conexión',
+          'La parcela se registrará automáticamente cuando haya internet.',
+          [{ text: 'OK', onPress: () => router.push('/(tabs)/parcelas') }]
+        );
       }
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error de red', 'No se pudo conectar con el servidor.');
-    } finally {
+
+    } catch (error: any) {
+      const mensaje = error?.message
+        ?? error?.toString()
+        ?? JSON.stringify(error)
+        ?? 'Error desconocido';
+
+      Alert.alert('Error detallado', mensaje);
       setLoading(false);
     }
   };
@@ -121,10 +166,9 @@ export default function NuevaParcela() {
         <SectionLabel icon="leaf-outline" label="Información Principal" />
 
         <View className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 mb-6 shadow-sm">
-          
-          {/* 👇 Nuevo Selector de Imagen de Portada */}
+
           <FieldLabel text="Foto de la Parcela (Opcional)" />
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={seleccionarImagen}
             className="mb-6 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-700 border-2 border-dashed border-gray-200 dark:border-gray-600 items-center justify-center h-40"
           >
@@ -172,12 +216,11 @@ export default function NuevaParcela() {
           />
         </View>
 
-        {/* ── Sección 2 (Detalles de Siembra) ── */}
+        {/* ── Sección 2 ── */}
         <SectionLabel icon="nutrition-outline" label="Detalles de Siembra" />
 
         <View className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 mb-8 shadow-sm">
 
-          {/* Sistema agrícola */}
           <FieldLabel text="Tipo de Sistema Agrícola" />
           <View className="flex-row flex-wrap gap-2 mb-5">
             {opcionesSistema.map((opcion) => {
@@ -186,12 +229,14 @@ export default function NuevaParcela() {
                 <TouchableOpacity
                   key={opcion}
                   onPress={() => setTipoSistema(opcion)}
-                  className={`px-4 py-2 rounded-full border-2 ${
-                    active ? 'bg-green-100 dark:bg-green-900 border-green-500' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'
-                  }`}
+                  className={`px-4 py-2 rounded-full border-2 ${active
+                    ? 'bg-green-100 dark:bg-green-900 border-green-500'
+                    : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'}`}
                   activeOpacity={0.7}
                 >
-                  <Text className={`text-sm ${active ? 'text-green-800 dark:text-green-300 font-semibold' : 'text-gray-400 dark:text-gray-300'}`}>
+                  <Text className={`text-sm ${active
+                    ? 'text-green-800 dark:text-green-300 font-semibold'
+                    : 'text-gray-400 dark:text-gray-300'}`}>
                     {opcion}
                   </Text>
                 </TouchableOpacity>
@@ -199,7 +244,6 @@ export default function NuevaParcela() {
             })}
           </View>
 
-          {/* Cultivos */}
           <FieldLabel text="Cultivos Asociados (Plantas)" required />
           <TextInput
             className="border-2 border-gray-100 dark:border-gray-700 rounded-xl px-4 py-3 text-green-950 dark:text-gray-100 bg-white dark:bg-gray-800 mb-4"
@@ -209,7 +253,6 @@ export default function NuevaParcela() {
             onChangeText={setCultivosAsociados}
           />
 
-          {/* Riego */}
           <FieldLabel text="Método de Riego" />
           <View className="flex-row flex-wrap gap-2 mb-5">
             {opcionesRiego.map((opcion) => {
@@ -218,12 +261,14 @@ export default function NuevaParcela() {
                 <TouchableOpacity
                   key={opcion}
                   onPress={() => setTipoRiego(opcion)}
-                  className={`px-4 py-2 rounded-full border-2 ${
-                    active ? 'bg-blue-100 dark:bg-blue-900 border-blue-500' : 'bg-blue-50 dark:bg-gray-800 border-blue-100 dark:border-gray-700'
-                  }`}
+                  className={`px-4 py-2 rounded-full border-2 ${active
+                    ? 'bg-blue-100 dark:bg-blue-900 border-blue-500'
+                    : 'bg-blue-50 dark:bg-gray-800 border-blue-100 dark:border-gray-700'}`}
                   activeOpacity={0.7}
                 >
-                  <Text className={`text-sm ${active ? 'text-blue-800 dark:text-blue-300 font-semibold' : 'text-gray-400 dark:text-gray-300'}`}>
+                  <Text className={`text-sm ${active
+                    ? 'text-blue-800 dark:text-blue-300 font-semibold'
+                    : 'text-gray-400 dark:text-gray-300'}`}>
                     {opcion}
                   </Text>
                 </TouchableOpacity>
@@ -231,7 +276,6 @@ export default function NuevaParcela() {
             })}
           </View>
 
-          {/* Fecha de siembra */}
           <FieldLabel text="Fecha de Siembra" />
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
@@ -271,7 +315,6 @@ export default function NuevaParcela() {
               )}
             </View>
           )}
-
         </View>
 
         {/* ── Botón Guardar ── */}
@@ -298,8 +341,6 @@ export default function NuevaParcela() {
     </SafeAreaView>
   );
 }
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function SectionLabel({ icon, label }: { icon: string; label: string }) {
   return (
