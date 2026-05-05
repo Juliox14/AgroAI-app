@@ -30,7 +30,7 @@ const RegistroScreen = () => {
       return;
     }
 
-    const url = `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3001/api/auth/register`;
+    const url = `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/auth/register`;
 
     try {
       // 2. Intento de petición al servidor

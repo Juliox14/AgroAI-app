@@ -5,6 +5,10 @@ import { ActivityIndicator, Alert } from "react-native";
 import { getItemAsync, setItemAsync, deleteItemAsync } from "expo-secure-store";
 import { decodeJWT } from "@/utils/JWT";
 import { SafeAreaView } from "react-native-safe-area-context";
+import NetInfo from "@react-native-community/netinfo";
+
+import { inicializarDB } from "@/utils/db";
+import { sincronizarCola } from "@/utils/sync";
 
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -15,6 +19,38 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState(false);
   const [payload, setPayload] = useState<payload | null>(null);
   const [token, setToken] = useState<string | null>(null);
+
+  // ── Inicializar la base de datos SQLite al arrancar la app ──────────────────
+  useEffect(() => {
+    inicializarDB();
+  }, []);
+
+  // ── Escuchar cambios de red y sincronizar la cola cuando vuelve internet ────
+  useEffect(() => {
+    if (!token) return;
+
+    const unsubscribe = NetInfo.addEventListener(async (state) => {
+      if (state.isConnected && token) {
+        const baseUrl = `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000`;
+        const { exitosos, fallidos } = await sincronizarCola(baseUrl, token);
+
+        if (exitosos > 0) {
+          Alert.alert(
+            'Sincronización completada',
+            `${exitosos} análisis enviados a la nube correctamente.`
+          );
+        }
+
+        if (fallidos > 0) {
+          console.warn(`[AgroAI Sync] ${fallidos} análisis no pudieron sincronizarse.`);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [token]);
+
+  // ── Auth ────────────────────────────────────────────────────────────────────
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
