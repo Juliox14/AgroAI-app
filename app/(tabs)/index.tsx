@@ -118,7 +118,7 @@ export default function Index() {
             <WeatherCard loading={loadingForecast} data={forecast} />
 
             {/* Tarjeta de cámara */}
-            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 mt-2 shadow flex-row">
+            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 mt-2 border border-gray-100 dark:border-gray-700 flex-row" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
               <View className="w-4/6 justify-center mb-2">
                 <Text className="text-lg font-semibold mb-1 text-gray-800 dark:text-gray-100">
                   Calcular índice NDVI
@@ -144,7 +144,7 @@ export default function Index() {
             </View>
 
             {/* Estado del cultivo */}
-            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 gap-6 shadow flex-row">
+            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 gap-6 border border-gray-100 dark:border-gray-700 flex-row" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
               <View className="flex-1 justify-center">
                 <Image
                   source={require('../../assets/images/sensor.png')}
@@ -170,7 +170,7 @@ export default function Index() {
             </View>
 
             {/* Información sobre NDVI */}
-            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 pb-0 mb-8 shadow">
+            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 pb-0 mb-8 border border-gray-100 dark:border-gray-700" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
               <Text className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
                 Conoce más sobre el NDVI
               </Text>

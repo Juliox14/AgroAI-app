@@ -21,7 +21,7 @@ interface Props {
 
 const SkeletonLoader = () => {
     return (
-        <View className="bg-white rounded-2xl p-6 mb-6 shadow">
+        <View className="bg-white rounded-2xl p-6 mb-6 border border-gray-100" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
             {/* Encabezado */}
             <View className="flex-row justify-between items-center">
                 <View>
@@ -65,7 +65,7 @@ export default function WeatherCard({ loading, data }: Props) {
     // };
 
     return (
-        <View className="bg-white rounded-2xl p-6 mb-6 shadow">
+        <View className="bg-white rounded-2xl p-6 mb-6 border border-gray-100" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
             <View className="flex-row justify-between items-center">
                 <View>
                     <Text className="text-lg font-semibold text-gray-800">

@@ -141,7 +141,7 @@ export default function Parcelas() {
         ) : (
 
           /* ── Lista de parcelas ── */
-          <View key="list" className="gap-4 pb-10">
+          <View key="list" className="pb-10">
             {parcelas.map((item) => (
               <ParcelaCard
                 key={item.id}
