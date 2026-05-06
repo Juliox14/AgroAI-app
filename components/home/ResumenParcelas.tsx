@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, MutableRefObject } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -21,7 +21,11 @@ function interpretarNDVI(valor: number): { label: string; color: string } {
   return              { label: 'Saludable',           color: '#22c55e' };
 }
 
-export default function ResumenParcelas() {
+interface Props {
+  onRefreshRef?: MutableRefObject<(() => void) | null>;
+}
+
+export default function ResumenParcelas({ onRefreshRef }: Props = {}) {
   const router = useRouter();
   const { token } = useAuth();
   const [parcelas, setParcelas] = useState<ResumenParcela[]>([]);
@@ -29,11 +33,6 @@ export default function ResumenParcelas() {
   const [offline, setOffline] = useState(false);
 
   const IP = process.env.EXPO_PUBLIC_IP_ADDRESS;
-
-  useEffect(() => {
-    if (!token) return;
-    cargarParcelas();
-  }, [token]);
 
   const cargarParcelas = async () => {
     setLoading(true);
@@ -98,6 +97,15 @@ export default function ResumenParcelas() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!token) return;
+    cargarParcelas();
+  }, [token]);
+
+  useEffect(() => {
+    if (onRefreshRef) onRefreshRef.current = cargarParcelas;
+  }, [onRefreshRef]);
 
   if (loading) {
     return (

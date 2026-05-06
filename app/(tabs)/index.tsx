@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Redirect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
@@ -9,6 +9,7 @@ import {
   Image,
   Text,
   TouchableOpacity,
+  RefreshControl,
 } from 'react-native';
 import * as Location from 'expo-location';
 import axios from 'axios';
@@ -33,6 +34,8 @@ export default function Index() {
   const [longitud, setLongitud] = useState<number>();
   const [forecast, setForecast] = useState<WeatherData | null>(null);
   const [loadingForecast, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const parcelasRefreshRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (_locationCache) return;
@@ -102,6 +105,24 @@ export default function Index() {
     })();
   }, [latitud, longitud]);
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    parcelasRefreshRef.current?.();
+    if (latitud !== undefined && longitud !== undefined) {
+      const red = await NetInfo.fetch();
+      if (red.isConnected) {
+        try {
+          const resp = await axios.get(
+            `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:4001/api/weather`,
+            { params: { lat: latitud, lon: longitud } }
+          );
+          if (resp.data?.data) setForecast(resp.data.data);
+        } catch {}
+      }
+    }
+    setRefreshing(false);
+  }, [latitud, longitud]);
+
   return (
     <>
       {session ? (
@@ -115,13 +136,19 @@ export default function Index() {
             </Text>
           </View>
 
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24 }} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24 }}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16a34a" colors={['#16a34a']} />
+            }
+          >
 
             <WeatherCard loading={loadingForecast} data={forecast} />
 
             <ConsejoDelDia clima={forecast} />
 
-            <ResumenParcelas />
+            <ResumenParcelas onRefreshRef={parcelasRefreshRef} />
 
             {/* Tarjeta de cámara */}
             <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 mt-2 border border-gray-100 dark:border-gray-700 flex-row" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
