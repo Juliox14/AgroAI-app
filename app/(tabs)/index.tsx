@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import axios from 'axios';
-import NetInfo from '@react-native-community/netinfo';
 import LocationHeader from '@/components/home/LocationHeader';
 import WeatherCard from '@/components/home/WeatherCard';
 import ResumenParcelas from '@/components/home/ResumenParcelas';
@@ -21,6 +20,7 @@ import { normalizarEstado } from '@/utils/normalizarEstado';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { WeatherData } from '@/components/home/WeatherCard';
+import NetInfo from '@react-native-community/netinfo'
 
 export default function Index() {
   const router = useRouter();
@@ -56,6 +56,7 @@ export default function Index() {
     })();
   }, []);
 
+  // 🟢 EFECTO CORREGIDO Y LIMPIO
   useEffect(() => {
     if (latitud === undefined || longitud === undefined) return;
 
@@ -72,9 +73,12 @@ export default function Index() {
           `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:4001/api/weather`,
           { params: { lat: latitud, lon: longitud } }
         );
-        if (resp.data?.data) setForecast(resp.data.data);
-      } catch (err: any) {
-        console.error("Error al cargar el clima:", err);
+
+        if (resp.data?.data) {
+          setForecast(resp.data.data);
+        }
+      } catch (error) {
+        console.error('Error al obtener el clima:', error);
       } finally {
         setLoading(false);
       }
@@ -128,31 +132,6 @@ export default function Index() {
               </View>
             </View>
 
-            {/* Estado del cultivo */}
-            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 gap-6 border border-gray-100 dark:border-gray-700 flex-row" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
-              <View className="flex-1 justify-center">
-                <Image
-                  source={require('../../assets/images/sensor.png')}
-                  className="w-24 h-24 self-center my-2"
-                />
-              </View>
-              <View className="w-4/6 justify-center mb-2">
-                <Text className="text-lg font-semibold mb-1 text-gray-800 dark:text-gray-100">
-                  Humedad del suelo
-                </Text>
-                <Text className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  Monitorea el estado de la tierra en tiempo real
-                  y recibe alertas cuando tu parcela necesite riego.
-                </Text>
-                <TouchableOpacity
-                  className="bg-green-700 px-4 py-2 rounded-xl self-start items-center justify-center flex-row"
-                  onPress={() => router.push('/(tabs)/tierra')}
-                >
-                  <Ionicons name="thermometer-outline" size={24} color="white" />
-                  <Text className="text-white font-semibold ml-2">Ver sensores</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
 
             {/* Información sobre NDVI */}
             <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 pb-0 mb-8 border border-gray-100 dark:border-gray-700" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
