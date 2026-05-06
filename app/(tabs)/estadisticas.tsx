@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-gifted-charts';
 import { Parcela } from '@/interfaces/parcelas';
 import { useAuth } from '@/context/AuthContext';
+import NetInfo from '@react-native-community/netinfo';
+import { obtenerParcelasDeCache } from '@/utils/db';
 
 interface StatsData {
   historial: { valor: number; fecha: string }[];
@@ -19,35 +21,46 @@ export default function Estadisticas() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loadingParcelas, setLoadingParcelas] = useState(true);
   const [loadingStats, setLoadingStats] = useState(false);
+  const [offline, setOffline] = useState(false);
 
   const { token } = useAuth();
 
   useEffect(() => {
-    if (token) {
-      fetchParcelas();
-    }
+    if (token) fetchParcelas();
   }, [token]);
 
   useEffect(() => {
-    if (selectedParcelaId && token) {
-      fetchStats(selectedParcelaId);
-    }
+    if (selectedParcelaId && token) fetchStats(selectedParcelaId);
   }, [selectedParcelaId]);
 
   const fetchParcelas = async () => {
+    setLoadingParcelas(true);
+    const red = await NetInfo.fetch();
+
+    if (!red.isConnected) {
+      const cache = obtenerParcelasDeCache();
+      setParcelas(cache);
+      if (cache.length > 0) setSelectedParcelaId(cache[0].id);
+      setOffline(true);
+      setLoadingParcelas(false);
+      return;
+    }
+
     try {
-      setLoadingParcelas(true);
       const response = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await response.json();
       if (data.success && data.data.length > 0) {
         setParcelas(data.data);
-        setSelectedParcelaId(data.data[0].id); // Selecciona la primera por defecto
+        setSelectedParcelaId(data.data[0].id);
+        setOffline(false);
       }
     } catch (error) {
+      const cache = obtenerParcelasDeCache();
+      setParcelas(cache);
+      if (cache.length > 0) setSelectedParcelaId(cache[0].id);
+      setOffline(cache.length > 0);
       console.error('Error al cargar parcelas:', error);
     } finally {
       setLoadingParcelas(false);
@@ -55,19 +68,23 @@ export default function Estadisticas() {
   };
 
   const fetchStats = async (id: string) => {
+    const red = await NetInfo.fetch();
+    if (!red.isConnected) {
+      setStats(null);
+      return;
+    }
+
     try {
       setLoadingStats(true);
-      const response = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas/${id}/estadisticas`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch(
+        `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas/${id}/estadisticas`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
       const data = await response.json();
-      if (data.success) {
-        setStats(data.data);
-      }
+      if (data.success) setStats(data.data);
     } catch (error) {
       console.error('Error al cargar estadísticas:', error);
+      setStats(null);
     } finally {
       setLoadingStats(false);
     }
@@ -81,11 +98,12 @@ export default function Estadisticas() {
 
   const chartData = stats?.historial.map(item => ({
     value: item.valor,
-    label: new Date(item.fecha).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })
+    label: new Date(item.fecha).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }),
   })) || [];
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-900">
+
       {/* Header */}
       <View className="px-5 pt-4 pb-4 bg-white dark:bg-gray-900 border-b border-green-100 dark:border-gray-800 shadow-sm">
         <Text className="text-2xl font-bold text-green-950 dark:text-gray-100 tracking-tight">Estadísticas</Text>
@@ -94,22 +112,35 @@ export default function Estadisticas() {
         </Text>
       </View>
 
+      {/* Banner offline */}
+      {offline && (
+        <View className="flex-row items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-700">
+          <Ionicons name="cloud-offline-outline" size={14} color="#B45309" />
+          <Text className="text-xs font-medium text-amber-700 dark:text-amber-400">
+            Sin internet · las estadísticas NDVI no están disponibles
+          </Text>
+        </View>
+      )}
+
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+
         {/* Selector de Parcelas */}
         <View className="py-4">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-5">
             {loadingParcelas ? (
               <ActivityIndicator color="#4aad8e" />
             ) : parcelas.length === 0 ? (
-              <Text className="text-gray-500 dark:text-gray-400 italic">No hay parcelas registradas.</Text>
+              <Text className="text-gray-500 dark:text-gray-400 italic">
+                {offline ? 'Sin parcelas en caché local.' : 'No hay parcelas registradas.'}
+              </Text>
             ) : (
               parcelas.map((p) => (
                 <TouchableOpacity
                   key={p.id}
                   onPress={() => setSelectedParcelaId(p.id)}
                   className={`mr-3 px-4 py-2 rounded-full border ${
-                    selectedParcelaId === p.id 
-                      ? 'bg-green-600 border-green-600' 
+                    selectedParcelaId === p.id
+                      ? 'bg-green-600 border-green-600'
                       : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                   }`}
                 >
@@ -131,11 +162,21 @@ export default function Estadisticas() {
               <ActivityIndicator size="large" color="#4aad8e" />
               <Text className="text-gray-500 dark:text-gray-400 mt-4">Analizando datos forenses...</Text>
             </View>
-          ) : stats ? (
+          ) : !stats ? (
+            <View className="mt-10 items-center bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700">
+              <Ionicons name={offline ? 'cloud-offline-outline' : 'bar-chart-outline'} size={48} color="#d1d5db" />
+              <Text className="text-gray-400 dark:text-gray-500 mt-3 text-center leading-6">
+                {offline
+                  ? 'Las estadísticas NDVI requieren conexión a internet.\nConéctate para ver el historial de salud.'
+                  : 'Selecciona una parcela para ver sus estadísticas.'}
+              </Text>
+            </View>
+          ) : (
             <>
               {/* Tarjetas KPI */}
               <View className="flex-row justify-between mb-6">
-                <View className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm w-[48%] border border-gray-100 dark:border-gray-700">
+                <View className="bg-white dark:bg-gray-800 p-4 rounded-2xl w-[48%] border border-gray-100 dark:border-gray-700"
+                  style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
                   <View className="flex-row items-center mb-2">
                     <Ionicons name="leaf" size={16} color="#22c55e" />
                     <Text className="text-xs text-gray-500 dark:text-gray-400 ml-1">Último NDVI</Text>
@@ -144,7 +185,8 @@ export default function Estadisticas() {
                   <Text className="text-xs text-gray-400 mt-1">Salud actual</Text>
                 </View>
 
-                <View className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm w-[48%] border border-gray-100 dark:border-gray-700">
+                <View className="bg-white dark:bg-gray-800 p-4 rounded-2xl w-[48%] border border-gray-100 dark:border-gray-700"
+                  style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
                   <View className="flex-row items-center mb-2">
                     <Ionicons name="trending-up" size={16} color="#3b82f6" />
                     <Text className="text-xs text-gray-500 dark:text-gray-400 ml-1">Evolución</Text>
@@ -156,10 +198,10 @@ export default function Estadisticas() {
                 </View>
               </View>
 
-              {/* Gráfica Principal */}
-              <View className="bg-white dark:bg-gray-800 p-4 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
+              {/* Gráfica */}
+              <View className="bg-white dark:bg-gray-800 p-4 rounded-3xl border border-gray-100 dark:border-gray-700 mb-6"
+                style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
                 <Text className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Progreso de Salud (NDVI)</Text>
-                
                 {chartData.length > 0 ? (
                   <View className="items-center mt-2">
                     <LineChart
@@ -189,12 +231,14 @@ export default function Estadisticas() {
                 ) : (
                   <View className="h-40 items-center justify-center">
                     <Ionicons name="bar-chart-outline" size={40} color="#d1d5db" />
-                    <Text className="text-gray-400 mt-2 text-center">No hay suficientes escaneos{"\n"}para generar la gráfica.</Text>
+                    <Text className="text-gray-400 mt-2 text-center">
+                      No hay suficientes escaneos{'\n'}para generar la gráfica.
+                    </Text>
                   </View>
                 )}
               </View>
 
-              {/* Tarjeta Extra: Total de Escaneos */}
+              {/* Total de Escaneos */}
               <View className="bg-green-50 dark:bg-green-900/30 p-4 rounded-2xl flex-row items-center justify-between border border-green-100 dark:border-green-900/50">
                 <View className="flex-row items-center">
                   <View className="w-10 h-10 rounded-full bg-green-200 dark:bg-green-800 items-center justify-center mr-3">
@@ -207,9 +251,8 @@ export default function Estadisticas() {
                 </View>
                 <Text className="text-2xl font-bold text-green-800 dark:text-green-400">{stats.total_analisis}</Text>
               </View>
-
             </>
-          ) : null}
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
