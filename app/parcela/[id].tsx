@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
 import BackButton from '@/components/BackButton';
+import NetInfo from '@react-native-community/netinfo';
+import { guardarParcelaDetalleEnCache, obtenerParcelaDeCache } from '@/utils/db';
 
 export default function DetalleParcela() {
   const { id } = useLocalSearchParams();
@@ -13,16 +15,39 @@ export default function DetalleParcela() {
 
   const [parcela, setParcela] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [offline, setOffline] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
 
   useEffect(() => {
     const fetchDetalle = async () => {
+      const red = await NetInfo.fetch();
+
+      if (!red.isConnected) {
+        const cache = obtenerParcelaDeCache(id as string);
+        if (cache) {
+          setParcela(cache);
+          setOffline(true);
+        }
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const json = await res.json();
-        if (json.success) setParcela(json.data);
+        if (json.success) {
+          setParcela(json.data);
+          guardarParcelaDetalleEnCache(json.data);
+          setOffline(false);
+        }
       } catch (error) {
+        const cache = obtenerParcelaDeCache(id as string);
+        if (cache) {
+          setParcela(cache);
+          setOffline(true);
+        }
         console.error("Error:", error);
       } finally {
         setLoading(false);
@@ -30,6 +55,44 @@ export default function DetalleParcela() {
     };
     fetchDetalle();
   }, [id]);
+
+  const confirmarEliminar = () => {
+    Alert.alert(
+      'Eliminar parcela',
+      `¿Estás seguro de que quieres eliminar "${parcela?.nombre}"? Esta acción no se puede deshacer.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Eliminar', style: 'destructive', onPress: eliminarParcela },
+      ]
+    );
+  };
+
+  const eliminarParcela = async () => {
+    setEliminando(true);
+    try {
+      const res = await fetch(
+        `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas/${id}`,
+        { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!res.ok) {
+        Alert.alert('Error', `El servidor respondió con código ${res.status}. Verifica que la ruta DELETE exista en el backend.`);
+        return;
+      }
+
+      const json = await res.json();
+      if (json.success) {
+        router.back();
+      } else {
+        Alert.alert('Error', json.message || 'No se pudo eliminar la parcela.');
+      }
+    } catch (e) {
+      console.error('[Eliminar parcela]', e);
+      Alert.alert('Error', 'No se pudo conectar al servidor.');
+    } finally {
+      setEliminando(false);
+    }
+  };
 
   if (loading) return <ActivityIndicator size="large" color="#16a34a" style={{ flex: 1 }} />;
 
@@ -64,18 +127,44 @@ export default function DetalleParcela() {
         <Text className="text-xl font-bold ml-4 text-green-900 flex-1" numberOfLines={1}>
           {parcela.nombre}
         </Text>
-        <TouchableOpacity
-          onPress={() => router.push({
-            pathname: '/parcelas/editar-parcela',
-            params: { id: id as string },
-          })}
-          className="flex-row items-center bg-green-50 border border-green-200 px-3 py-2 rounded-xl"
-          activeOpacity={0.7}
-        >
-          <Ionicons name="pencil-outline" size={16} color="#15803d" />
-          <Text className="text-green-700 font-semibold text-sm ml-1">Editar</Text>
-        </TouchableOpacity>
+        {!offline && (
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity
+              onPress={() => router.push({
+                pathname: '/parcelas/editar-parcela',
+                params: { id: id as string },
+              })}
+              className="flex-row items-center bg-green-50 border border-green-200 px-3 py-2 rounded-xl"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="pencil-outline" size={16} color="#15803d" />
+              <Text className="text-green-700 font-semibold text-sm ml-1">Editar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={confirmarEliminar}
+              disabled={eliminando}
+              className="flex-row items-center bg-red-50 border border-red-200 px-3 py-2 rounded-xl"
+              activeOpacity={0.7}
+            >
+              {eliminando
+                ? <ActivityIndicator size="small" color="#dc2626" />
+                : <Ionicons name="trash-outline" size={16} color="#dc2626" />
+              }
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
+
+      {/* ── Banner offline ── */}
+      {offline && (
+        <View className="flex-row items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-200">
+          <Ionicons name="cloud-offline-outline" size={14} color="#B45309" />
+          <Text className="text-xs font-medium text-amber-700">
+            Sin internet · mostrando datos guardados
+          </Text>
+        </View>
+      )}
 
       <ScrollView className="flex-1 px-6 mt-4">
 
@@ -112,13 +201,20 @@ export default function DetalleParcela() {
         {/* Historial NDVI */}
         <Text className="text-xl font-bold text-gray-800 mb-4">Historial de Salud (NDVI)</Text>
 
-        {parcela.registros?.length === 0 ? (
+        {!parcela.registros ? (
+          <View className="items-center py-10 bg-white rounded-2xl border border-dashed border-gray-300">
+            <Ionicons name="cloud-offline-outline" size={48} color="#D1D5DB" />
+            <Text className="text-gray-400 mt-2 text-center px-4">
+              Historial no disponible sin conexión.{'\n'}Conéctate para verlo.
+            </Text>
+          </View>
+        ) : parcela.registros.length === 0 ? (
           <View className="items-center py-10 bg-white rounded-2xl border border-dashed border-gray-300">
             <Ionicons name="camera-outline" size={48} color="#D1D5DB" />
             <Text className="text-gray-400 mt-2">Aún no hay capturas de esta parcela</Text>
           </View>
         ) : (
-          parcela.registros?.map((registro: any) => (
+          parcela.registros.map((registro: any) => (
             <TouchableOpacity
               key={registro.id}
               className="bg-white rounded-2xl p-4 mb-4 flex-row items-center shadow-sm"
@@ -144,13 +240,15 @@ export default function DetalleParcela() {
         <View className="h-24" />
       </ScrollView>
 
-      {/* Botón flotante nueva captura */}
-      <TouchableOpacity
-        onPress={() => router.push('/(tabs)/camara')}
-        className="absolute bottom-10 right-6 bg-green-700 w-16 h-16 rounded-full items-center justify-center shadow-lg"
-      >
-        <Ionicons name="aperture-outline" size={30} color="white" />
-      </TouchableOpacity>
+      {/* Botón flotante nueva captura — solo con conexión */}
+      {!offline && (
+        <TouchableOpacity
+          onPress={() => router.push('/(tabs)/camara')}
+          className="absolute bottom-10 right-6 bg-green-700 w-16 h-16 rounded-full items-center justify-center shadow-lg"
+        >
+          <Ionicons name="aperture-outline" size={30} color="white" />
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }

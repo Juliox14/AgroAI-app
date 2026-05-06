@@ -20,19 +20,22 @@ import { normalizarEstado } from '@/utils/normalizarEstado';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { WeatherData } from '@/components/home/WeatherCard';
-import NetInfo from '@react-native-community/netinfo';
+import NetInfo from '@react-native-community/netinfo'
+
+let _locationCache: string | null = null;
 
 export default function Index() {
   const router = useRouter();
   const { session, payload } = useAuth();
 
-  const [locationName, setLocationName] = useState('Cargando ubicación...');
+  const [locationName, setLocationName] = useState(_locationCache ?? 'Cargando ubicación...');
   const [latitud, setLatitud] = useState<number>();
   const [longitud, setLongitud] = useState<number>();
   const [forecast, setForecast] = useState<WeatherData | null>(null);
   const [loadingForecast, setLoading] = useState(false);
 
   useEffect(() => {
+    if (_locationCache) return;
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -44,26 +47,41 @@ export default function Index() {
         setLatitud(loc.coords.latitude);
         setLongitud(loc.coords.longitude);
 
-        const [place] = await Location.reverseGeocodeAsync(loc.coords);
-        const rawState = place.region ?? '';
-        const fullState = normalizarEstado(rawState);
-        const mun = place.city || place.district || place.subregion || '';
-        setLocationName(`${mun || '—'}, ${fullState || '—'}`);
+        const red = await NetInfo.fetch();
+        if (red.isConnected) {
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${loc.coords.latitude}&lon=${loc.coords.longitude}&format=json`,
+              { headers: { 'Accept-Language': 'es' } }
+            );
+            const data = await res.json();
+            const ciudad = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality || '';
+            const estado = data.address?.state || '';
+            const nombre = `${ciudad || '—'}, ${estado || '—'}`;
+            _locationCache = nombre;
+            setLocationName(nombre);
+          } catch {
+            setLocationName('Ubicación desconocida');
+          }
+        } else {
+          setLocationName('Sin conexión');
+        }
       } catch (error) {
         console.error('Error obteniendo ubicación:', error);
         setLocationName('Ubicación desconocida');
       }
-    })();
+    })().catch(() => setLocationName('Ubicación desconocida'));
   }, []);
 
+  // 🟢 EFECTO CORREGIDO Y LIMPIO
   useEffect(() => {
     if (latitud === undefined || longitud === undefined) return;
 
     (async () => {
-      const net = await NetInfo.fetch();
-      if (!net.isConnected) {
+      const red = await NetInfo.fetch();
+      if (!red.isConnected) {
         setLoading(false);
-        return; // No intenta cargar el clima sin internet
+        return;
       }
 
       setLoading(true);
@@ -72,9 +90,12 @@ export default function Index() {
           `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:4001/api/weather`,
           { params: { lat: latitud, lon: longitud } }
         );
-        if (resp.data?.data) setForecast(resp.data.data);
-      } catch (err: any) {
-        console.error('Error al cargar el clima:', err);
+
+        if (resp.data?.data) {
+          setForecast(resp.data.data);
+        }
+      } catch (error) {
+        console.error('Error al obtener el clima:', error);
       } finally {
         setLoading(false);
       }
@@ -94,7 +115,7 @@ export default function Index() {
             </Text>
           </View>
 
-          <ScrollView className="px-5 pt-6" showsVerticalScrollIndicator={false}>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24 }} showsVerticalScrollIndicator={false}>
 
             <WeatherCard loading={loadingForecast} data={forecast} />
 
@@ -103,7 +124,7 @@ export default function Index() {
             <ResumenParcelas />
 
             {/* Tarjeta de cámara */}
-            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 shadow flex-row">
+            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 mt-2 border border-gray-100 dark:border-gray-700 flex-row" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
               <View className="w-4/6 justify-center mb-2">
                 <Text className="text-lg font-semibold mb-1 text-gray-800 dark:text-gray-100">
                   Calcular índice NDVI
@@ -128,8 +149,9 @@ export default function Index() {
               </View>
             </View>
 
+
             {/* Información sobre NDVI */}
-            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 pb-0 mb-8 shadow">
+            <View className="bg-white dark:bg-gray-800 rounded-2xl p-5 pb-0 mb-8 border border-gray-100 dark:border-gray-700" style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}>
               <Text className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
                 Conoce más sobre el NDVI
               </Text>

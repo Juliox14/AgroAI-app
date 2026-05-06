@@ -77,13 +77,20 @@ export default function ConfiguracionScreen() {
                 Alert.alert('Permiso denegado', 'Se requiere ubicación.');
                 return;
             }
-            const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-            const [place] = await Location.reverseGeocodeAsync(loc.coords);
-            const rawState = place.region ?? '';
-            const fullState = normalizarEstado(rawState);
-            const mun = place.city || place.district || place.subregion || '';
-            setLocationName(`${mun || '—'}, ${fullState || '—'}`);
-        })();
+            try {
+                const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+                const res = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?lat=${loc.coords.latitude}&lon=${loc.coords.longitude}&format=json`,
+                    { headers: { 'Accept-Language': 'es' } }
+                );
+                const data = await res.json();
+                const ciudad = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality || '';
+                const estado = data.address?.state || '';
+                setLocationName(`${ciudad || '—'}, ${estado || '—'}`);
+            } catch {
+                setLocationName('Ubicación desconocida');
+            }
+        })().catch(() => setLocationName('Ubicación desconocida'));
     }, []);
 
     // ── Handlers existentes ──────────────────────────────────────────────────

@@ -14,8 +14,10 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useColorScheme } from 'nativewind';
 
 const RegistroScreen = () => {
+  const { colorScheme } = useColorScheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,7 +61,7 @@ const RegistroScreen = () => {
       // 4. Manejo de errores de red o del cliente
       console.error("Error en la petición:", error);
       Alert.alert(
-        'Error de conexión', 
+        'Error de conexión',
         'No se pudo conectar con el servidor. Verifica que tu API esté encendida y la IP sea correcta.'
       );
     }
@@ -76,7 +78,11 @@ const RegistroScreen = () => {
           {/* Header con logo */}
           <View className="flex items-center justify-center mb-6 mt-4">
             <Image
-              source={require('../assets/images/AgroAI-letters.png')}
+              source={
+                colorScheme === 'dark'
+                  ? require('../assets/images/AgroAI-letters-dark.png')
+                  : require('../assets/images/AgroAI-letters.png')
+              }
               className="h-14 w-48"
               resizeMode="contain"
             />
@@ -84,31 +90,31 @@ const RegistroScreen = () => {
 
           {/* Contenido de registro */}
           <View className="p-4">
-            <View className="bg-white rounded-xl p-6 shadow-sm mb-4">
-              <Text className="text-2xl font-bold text-gray-800 mb-6">Registro de usuario</Text>
-              
-              {/* Campo de nombre */}
+            <View className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm mb-4">
+              <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Registro de usuario</Text>
+
               <View className="mb-4">
-                <Text className="text-gray-700 mb-2 font-medium">Nombre</Text>
-                <View className="bg-gray-100 rounded-lg flex-row items-center px-3 border border-gray-200">
+                <Text className="text-gray-700 dark:text-gray-300 mb-2 font-medium">Nombre</Text>
+                <View className="bg-gray-100 dark:bg-gray-700 rounded-lg flex-row items-center px-3 border border-gray-200 dark:border-gray-600">
                   <Ionicons name="person-outline" size={20} color="#666" />
                   <TextInput
-                    className="flex-1 py-3 px-2 text-gray-800"
+                    className="flex-1 py-3 px-2 text-gray-800 dark:text-gray-100"
                     placeholder="Ingresa tu nombre"
+                    placeholderTextColor="#9ca3af"
                     value={name}
                     onChangeText={setName}
                   />
                 </View>
               </View>
 
-              {/* Campo de email */}
               <View className="mb-4">
-                <Text className="text-gray-700 mb-2 font-medium">Correo electrónico</Text>
-                <View className="bg-gray-100 rounded-lg flex-row items-center px-3 border border-gray-200">
+                <Text className="text-gray-700 dark:text-gray-300 mb-2 font-medium">Correo electrónico</Text>
+                <View className="bg-gray-100 dark:bg-gray-700 rounded-lg flex-row items-center px-3 border border-gray-200 dark:border-gray-600">
                   <Ionicons name="mail-outline" size={20} color="#666" />
                   <TextInput
-                    className="flex-1 py-3 px-2 text-gray-800"
+                    className="flex-1 py-3 px-2 text-gray-800 dark:text-gray-100"
                     placeholder="Ingresa tu correo"
+                    placeholderTextColor="#9ca3af"
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -117,14 +123,14 @@ const RegistroScreen = () => {
                 </View>
               </View>
 
-              {/* Campo de contraseña */}
               <View className="mb-6">
-                <Text className="text-gray-700 mb-2 font-medium">Contraseña</Text>
-                <View className="bg-gray-100 rounded-lg flex-row items-center px-3 border border-gray-200">
+                <Text className="text-gray-700 dark:text-gray-300 mb-2 font-medium">Contraseña</Text>
+                <View className="bg-gray-100 dark:bg-gray-700 rounded-lg flex-row items-center px-3 border border-gray-200 dark:border-gray-600">
                   <Ionicons name="lock-closed-outline" size={20} color="#666" />
                   <TextInput
-                    className="flex-1 py-3 px-2 text-gray-800"
+                    className="flex-1 py-3 px-2 text-gray-800 dark:text-gray-100"
                     placeholder="Crea una contraseña"
+                    placeholderTextColor="#9ca3af"
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
@@ -147,11 +153,10 @@ const RegistroScreen = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Enlace para iniciar sesión */}
-            <View className="bg-white rounded-xl p-6 shadow-sm flex-row justify-center">
-              <Text className="text-gray-600">¿Ya tienes una cuenta? </Text>
-              <TouchableOpacity onPress={() => router.push('/login')} >
-                <Text className="text-green-700 font-medium">Iniciar sesión</Text>
+            <View className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm flex-row justify-center">
+              <Text className="text-gray-600 dark:text-gray-400">¿Ya tienes una cuenta? </Text>
+              <TouchableOpacity onPress={() => router.push('/login')}>
+                <Text className="text-green-700 dark:text-green-400 font-medium">Iniciar sesión</Text>
               </TouchableOpacity>
             </View>
           </View>

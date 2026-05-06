@@ -1,10 +1,12 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import NetInfo from '@react-native-community/netinfo';
 import {
   obtenerPendientes,
   marcarSincronizado,
   incrementarIntentos,
 } from './db';
+
+let sincronizando = false;
 
 // Mapeo de tipo → endpoint base
 const ENDPOINT: Record<string, string> = {
@@ -22,6 +24,10 @@ export async function sincronizarCola(
   token: string
 ): Promise<{ exitosos: number; fallidos: number }> {
 
+  if (sincronizando) return { exitosos: 0, fallidos: 0 };
+  sincronizando = true;
+
+  try {
   const estado = await NetInfo.fetch();
   if (!estado.isConnected) return { exitosos: 0, fallidos: 0 };
 
@@ -50,7 +56,7 @@ export async function sincronizarCola(
       if (tiposConImagen.has(item.tipo) && item.image_uri) {
         const info = await FileSystem.getInfoAsync(item.image_uri);
         if (info.exists) {
-          formData.append('file', {
+          formData.append('imagen', {
             uri:  item.image_uri,
             name: 'imagen.jpg',
             type: 'image/jpeg',
@@ -89,4 +95,7 @@ export async function sincronizarCola(
 
   console.log(`[AgroAI Sync] ✓ ${exitosos} enviados · ✗ ${fallidos} fallidos`);
   return { exitosos, fallidos };
+  } finally {
+    sincronizando = false;
+  }
 }

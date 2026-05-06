@@ -1,45 +1,71 @@
 import ParcelaCard from '@/components/ParcelaCard';
 import ParcelaCardSkeleton from '@/components/Fallbacks/ParcelaCardSkeleton';
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
 import { Parcela } from '@/interfaces/parcelas';
 import { Ionicons } from '@expo/vector-icons';
+import NetInfo from '@react-native-community/netinfo';
+import { guardarParcelasEnCache, obtenerParcelasDeCache } from '@/utils/db';
 
 export default function Parcelas() {
   const [parcelas, setParcelas] = useState<Parcela[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [offline, setOffline] = useState(false);
 
   const { payload, token } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchParcelas = async () => {
-      try {
-        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        const json = await res.json();
-        if (json.success) {
-          setParcelas(json.data);
-        } else {
-          console.error('Error del servidor:', json.message);
-        }
-      } catch (error) {
-        console.error('Error al cargar parcelas:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchParcelas = useCallback(async () => {
+    const red = await NetInfo.fetch();
 
+    if (!red.isConnected) {
+      const cache = obtenerParcelasDeCache();
+      setParcelas(cache);
+      setOffline(true);
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const json = await res.json();
+      if (json.success) {
+        setParcelas(json.data);
+        guardarParcelasEnCache(json.data);
+        setOffline(false);
+      } else {
+        console.error('Error del servidor:', json.message);
+      }
+    } catch (error) {
+      const cache = obtenerParcelasDeCache();
+      setParcelas(cache);
+      setOffline(cache.length > 0);
+      console.error('Error al cargar parcelas:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
     if (payload) fetchParcelas();
   }, [payload]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchParcelas();
+  };
 
   const handleAddParcela = () => router.push('/parcelas/nueva-parcela');
 
@@ -71,7 +97,24 @@ export default function Parcelas() {
         </View>
       </View>
 
-      <ScrollView className="flex-1 px-5 pt-5" showsVerticalScrollIndicator={false}>
+      {/* ── Banner offline ── */}
+      {offline && !loading && (
+        <View className="flex-row items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-700">
+          <Ionicons name="cloud-offline-outline" size={14} color="#B45309" />
+          <Text className="text-xs font-medium text-amber-700 dark:text-amber-400">
+            Sin internet · mostrando datos guardados
+          </Text>
+        </View>
+      )}
+
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16a34a" colors={['#16a34a']} />
+        }
+      >
 
         {loading ? (
           <View key="loading" className="gap-4">
@@ -87,28 +130,32 @@ export default function Parcelas() {
               <Ionicons name="map-outline" size={40} color="#86EFAC" />
             </View>
             <Text className="text-xl font-bold text-green-950 dark:text-gray-100 mb-2 text-center">
-              Sin terrenos aún
+              {offline ? 'Sin datos guardados' : 'Sin terrenos aún'}
             </Text>
             <Text className="text-sm text-gray-400 dark:text-gray-300 text-center leading-5 mb-8">
-              Registra tu primera milpa o parcela para comenzar a monitorear su salud.
+              {offline
+                ? 'Conéctate a internet para cargar tus parcelas por primera vez.'
+                : 'Registra tu primera milpa o parcela para comenzar a monitorear su salud.'}
             </Text>
-            <TouchableOpacity
-              onPress={handleAddParcela}
-              className="flex-row items-center bg-green-700 px-8 py-3.5 rounded-2xl"
-              activeOpacity={0.85}
-              style={{ shadowColor: '#14532D', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 5 }}
-            >
-              <View className="w-7 h-7 rounded-lg bg-white/20 items-center justify-center mr-2">
-                <Ionicons name="add" size={18} color="white" />
-              </View>
-              <Text className="text-white font-bold text-base">Registrar Parcela</Text>
-            </TouchableOpacity>
+            {!offline && (
+              <TouchableOpacity
+                onPress={handleAddParcela}
+                className="flex-row items-center bg-green-700 px-8 py-3.5 rounded-2xl"
+                activeOpacity={0.85}
+                style={{ shadowColor: '#14532D', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 5 }}
+              >
+                <View className="w-7 h-7 rounded-lg bg-white/20 items-center justify-center mr-2">
+                  <Ionicons name="add" size={18} color="white" />
+                </View>
+                <Text className="text-white font-bold text-base">Registrar Parcela</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
         ) : (
 
           /* ── Lista de parcelas ── */
-          <View key="list" className="gap-4 pb-10">
+          <View key="list" className="pb-10">
             {parcelas.map((item) => (
               <ParcelaCard
                 key={item.id}
@@ -122,14 +169,16 @@ export default function Parcelas() {
             ))}
 
             {/* Botón añadir al final de la lista */}
-            <TouchableOpacity
-              onPress={handleAddParcela}
-              className="flex-row items-center justify-center border-2 border-dashed border-green-200 dark:border-gray-700 rounded-2xl py-4 bg-green-50 dark:bg-gray-800"
-              activeOpacity={0.7}
-            >
-              <Ionicons name="add-circle-outline" size={20} color="#86EFAC" />
-              <Text className="text-green-400 font-semibold text-sm ml-2">Agregar otra parcela</Text>
-            </TouchableOpacity>
+            {!offline && (
+              <TouchableOpacity
+                onPress={handleAddParcela}
+                className="flex-row items-center justify-center border-2 border-dashed border-green-200 dark:border-gray-700 rounded-2xl py-4 bg-green-50 dark:bg-gray-800"
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add-circle-outline" size={20} color="#86EFAC" />
+                <Text className="text-green-400 font-semibold text-sm ml-2">Agregar otra parcela</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
         )}
