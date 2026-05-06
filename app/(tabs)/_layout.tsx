@@ -111,6 +111,21 @@ export default function LayoutTabs() {
                     />
 
                     <Tabs.Screen
+                        name="estadisticas"
+                        options={{
+                            title: 'Estadísticas',
+                            headerShown: false,
+                            tabBarIcon: ({ focused }) => (
+                                <Ionicons
+                                    name="stats-chart-outline"
+                                    size={28}
+                                    color={focused ? '#4aad8e' : '#666'}
+                                />
+                            )
+                        }}
+                    />
+
+                    <Tabs.Screen
                         name="configuracion"
                         options={{
                             title: 'Ajustes',
