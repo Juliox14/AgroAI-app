@@ -100,7 +100,7 @@ export default function Parcelas() {
         </View>
       )}
 
-      <ScrollView className="flex-1 px-5 pt-5" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20 }} showsVerticalScrollIndicator={false}>
 
         {loading ? (
           <View key="loading" className="gap-4">
