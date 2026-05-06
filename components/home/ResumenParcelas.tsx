@@ -106,7 +106,11 @@ export default function ResumenParcelas() {
       <Text className="text-base font-bold text-gray-700 dark:text-gray-200 mb-3">
         Tus parcelas
       </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 4, paddingVertical: 4 }}
+      >
         {parcelas.map((p) => {
           const interp = interpretarNDVI(p.ultimo_ndvi);
           return (
