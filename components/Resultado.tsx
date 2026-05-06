@@ -51,7 +51,7 @@ interface ResultProps {
 }
 
 
-const Result = ({ nameIcon = 'water', value = 0.42, label = 'Estrés hídrico' }: ResultProps ) => {
+const Resultado = ({ nameIcon = 'water', value = 0.42, label = 'Estrés hídrico' }: ResultProps ) => {
 
   return (
     <View className="flex-row rounded-2xl items-center justify-between bg-white p-4 shadow-sm w-auto">
@@ -71,4 +71,4 @@ const Result = ({ nameIcon = 'water', value = 0.42, label = 'Estrés hídrico' }
   )
 }
 
-export default Result
+export default Resultado;

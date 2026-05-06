@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import InstruccionesCalibración from '../../../components/camara/calibracion/InstruccionesCalibracion';
 import CapturaCalibración from '../../../components/camara/calibracion/CapturaCalibracion';
 
-type Paso = 'instrucciones' | 'captura_noir' | 'captura_rgb';
+type Paso = 'instrucciones' | 'captura';
 
 export default function Calibracion() {
   const router = useRouter();
@@ -15,20 +15,12 @@ export default function Calibracion() {
     <View className="flex-1">
       {paso === 'instrucciones' && (
         <InstruccionesCalibración
-          onSiguiente={() => setPaso('captura_rgb')}
+          onSiguiente={() => setPaso('captura')}
           onCancelar={() => router.back()}
         />
       )}
-      {paso === 'captura_noir' && (
+      {paso === 'captura' && (
         <CapturaCalibración
-          camara="noir"
-          onCalibrado={() => setPaso('captura_rgb')}
-          onCancelar={() => router.back()}
-        />
-      )}
-      {paso === 'captura_rgb' && (
-        <CapturaCalibración
-          camara="rgb"
           onCalibrado={() => router.push('/(tabs)/camara')}
           onCancelar={() => router.back()}
         />

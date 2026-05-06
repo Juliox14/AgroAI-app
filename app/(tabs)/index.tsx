@@ -21,21 +21,18 @@ import { normalizarEstado } from '@/utils/normalizarEstado';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { WeatherData } from '@/components/home/WeatherCard';
+import NetInfo from '@react-native-community/netinfo';
 
 export default function Index() {
   const router = useRouter();
   const { session, payload } = useAuth();
 
   const [locationName, setLocationName] = useState('Cargando ubicación...');
-
-  // 1. Agregamos estados para las coordenadas
   const [latitud, setLatitud] = useState<number>();
   const [longitud, setLongitud] = useState<number>();
-
   const [forecast, setForecast] = useState<WeatherData | null>(null);
   const [loadingForecast, setLoading] = useState(false);
 
-  // Obtener la ubicación del GPS
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -45,29 +42,23 @@ export default function Index() {
       }
       try {
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-
-        // 2. Guardamos las coordenadas en el estado
         setLatitud(loc.coords.latitude);
         setLongitud(loc.coords.longitude);
 
-        // Seguimos usando el reverse geocoding SOLO para la interfaz visual
         const [place] = await Location.reverseGeocodeAsync(loc.coords);
         const rawState = place.region ?? '';
         const fullState = normalizarEstado(rawState);
         const mun = place.city || place.district || place.subregion || '';
-
         setLocationName(`${mun || '—'}, ${fullState || '—'}`);
       } catch (error) {
-        console.error("Error obteniendo ubicación:", error);
-        setLocationName("Ubicación desconocida");
+        console.error('Error obteniendo ubicación:', error);
+        setLocationName('Ubicación desconocida');
       }
     })();
   }, []);
 
-  // Consumir la API
   useEffect(() => {
     if (latitud === undefined || longitud === undefined) return;
-    setLoading(true);
 
     (async () => {
       try {
@@ -86,6 +77,13 @@ export default function Index() {
           setForecast(resp.data.data);
         }
 
+      setLoading(true);
+      try {
+        const resp = await axios.get(
+          `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:4001/api/weather`,
+          { params: { lat: latitud, lon: longitud } }
+        );
+        if (resp.data?.data) setForecast(resp.data.data);
       } catch (err: any) {
         console.error("Error al cargar el clima:", err);
       } finally {

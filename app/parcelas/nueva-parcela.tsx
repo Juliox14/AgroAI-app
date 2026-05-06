@@ -46,83 +46,107 @@ export default function NuevaParcela() {
   };
 
   const handleGuardar = async () => {
-  if (!nombre.trim() || !cultivosAsociados.trim()) {
-    Alert.alert('Campos incompletos', 'Por favor ingresa al menos el nombre y los cultivos.');
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const red = await NetInfo.fetch();
-
-    // Para enviar al backend (con número)
-    const payloadBackend = {
-      nombre,
-      comunidad_ejido: comunidadEjido,
-      area_metros_cuadrados: area ? parseFloat(area) : null,
-      tipo_sistema: tipoSistema,
-      cultivos_asociados: cultivosAsociados,
-      tipo_riego: tipoRiego,
-      fecha_siembra: fechaSiembra.toISOString(),
-      ...(payload?.id ? { usuarioId: payload.id.toString() } : {}),
-    };
-
-    // Para la cola SQLite (todo string)
-    const payloadCola: Record<string, string> = {
-      nombre,
-      comunidad_ejido: comunidadEjido,
-      area_metros_cuadrados: area || '',
-      tipo_sistema: tipoSistema,
-      cultivos_asociados: cultivosAsociados,
-      tipo_riego: tipoRiego,
-      fecha_siembra: fechaSiembra.toISOString(),
-      ...(payload?.id ? { usuarioId: payload.id.toString() } : {}),
-    };
-
-    if (red.isConnected) {
-  const res = await fetch(
-    `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payloadBackend),
-    }
-  );
-
-  const json = await res.json();
-  Alert.alert('Respuesta servidor', `status: ${res.status}\n${JSON.stringify(json, null, 2)}`); // quita esto cuando funcione
-  
-  if (json.success) {
-    Alert.alert('¡Éxito!', 'La parcela se ha registrado correctamente.', [
-      { text: 'OK', onPress: () => router.push('/(tabs)/parcelas') },
-    ]);
-  } else {
-    Alert.alert('Error del servidor', json.message || 'No se pudo guardar la parcela.');
-  }
-
-    } else {
-      encolarItem('nueva_parcela', payloadCola, imagenUri ?? '');
-      Alert.alert(
-        'Guardado sin conexión',
-        'La parcela se registrará automáticamente cuando haya internet.',
-        [{ text: 'OK', onPress: () => router.push('/(tabs)/parcelas') }]
-      );
+    if (!nombre.trim() || !cultivosAsociados.trim()) {
+      Alert.alert('Campos incompletos', 'Por favor ingresa al menos el nombre y los cultivos.');
+      return;
     }
 
-  } catch (error: any) {
-  const mensaje = error?.message 
-    ?? error?.toString() 
-    ?? JSON.stringify(error) 
-    ?? 'Error desconocido';
-    
-  Alert.alert('Error detallado', mensaje);
-  setLoading(false);
-}
-};
+    setLoading(true);
+
+    try {
+      const red = await NetInfo.fetch();
+
+      // Para enviar al backend (con número)
+      const payloadBackend = {
+        nombre,
+        comunidad_ejido: comunidadEjido,
+        area_metros_cuadrados: area ? parseFloat(area) : null,
+        tipo_sistema: tipoSistema,
+        cultivos_asociados: cultivosAsociados,
+        tipo_riego: tipoRiego,
+        fecha_siembra: fechaSiembra.toISOString(),
+        ...(payload?.id ? { usuarioId: payload.id.toString() } : {}),
+      };
+
+      // Para la cola SQLite (todo string)
+      const payloadCola: Record<string, string> = {
+        nombre,
+        comunidad_ejido: comunidadEjido,
+        area_metros_cuadrados: area || '',
+        tipo_sistema: tipoSistema,
+        cultivos_asociados: cultivosAsociados,
+        tipo_riego: tipoRiego,
+        fecha_siembra: fechaSiembra.toISOString(),
+        ...(payload?.id ? { usuarioId: payload.id.toString() } : {}),
+      };
+
+      if (red.isConnected) {
+        let res;
+
+        if (imagenUri) {
+          // Con imagen: multipart/form-data para que multer procese el archivo
+          const formData = new FormData();
+          for (const [k, v] of Object.entries(payloadBackend)) {
+            if (v !== null && v !== undefined) formData.append(k, String(v));
+          }
+          formData.append('imagen', {
+            uri: imagenUri,
+            name: 'portada_parcela.jpg',
+            type: 'image/jpeg',
+          } as any);
+
+          res = await fetch(
+            `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`,
+            {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}` },
+              body: formData,
+            }
+          );
+        } else {
+          // Sin imagen: JSON normal
+          res = await fetch(
+            `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(payloadBackend),
+            }
+          );
+        }
+
+        const json = await res.json();
+
+        if (json.success) {
+          Alert.alert('¡Éxito!', 'La parcela se ha registrado correctamente.', [
+            { text: 'OK', onPress: () => router.push('/(tabs)/parcelas') },
+          ]);
+        } else {
+          Alert.alert('Error del servidor', json.message || 'No se pudo guardar la parcela.');
+        }
+
+      } else {
+        encolarItem('nueva_parcela', payloadCola, imagenUri ?? '');
+        Alert.alert(
+          'Guardado sin conexión',
+          'La parcela se registrará automáticamente cuando haya internet.',
+          [{ text: 'OK', onPress: () => router.push('/(tabs)/parcelas') }]
+        );
+      }
+
+    } catch (error: any) {
+      const mensaje = error?.message
+        ?? error?.toString()
+        ?? JSON.stringify(error)
+        ?? 'Error desconocido';
+
+      Alert.alert('Error detallado', mensaje);
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
