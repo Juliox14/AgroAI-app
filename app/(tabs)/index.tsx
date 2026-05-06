@@ -113,7 +113,7 @@ export default function Index() {
             </Text>
           </View>
 
-          <ScrollView className="px-5 pt-6" showsVerticalScrollIndicator={false}>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24 }} showsVerticalScrollIndicator={false}>
 
             <WeatherCard loading={loadingForecast} data={forecast} />
 
