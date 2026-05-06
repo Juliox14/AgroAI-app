@@ -7,24 +7,24 @@ import { useAuth } from '@/context/AuthContext';
 import { Parcela } from '@/interfaces/parcelas';
 
 interface ResumenParcela extends Parcela {
-  ultimo_ndvi:  number;
-  progreso:     number;
+  ultimo_ndvi: number;
+  progreso: number;
   total_analisis: number;
-  cargando:     boolean;
+  cargando: boolean;
 }
 
 function interpretarNDVI(valor: number): { label: string; color: string } {
-  if (valor <= 0)   return { label: 'Sin vegetación', color: '#ef4444' };
-  if (valor < 0.2)  return { label: 'Estrés',         color: '#f97316' };
-  if (valor < 0.5)  return { label: 'Moderada',       color: '#eab308' };
-  return               { label: 'Saludable',           color: '#22c55e' };
+  if (valor <= 0) return { label: 'Sin vegetación', color: '#ef4444' };
+  if (valor < 0.2) return { label: 'Estrés', color: '#f97316' };
+  if (valor < 0.5) return { label: 'Moderada', color: '#eab308' };
+  return { label: 'Saludable', color: '#22c55e' };
 }
 
 export default function ResumenParcelas() {
-  const router  = useRouter();
+  const router = useRouter();
   const { token } = useAuth();
   const [parcelas, setParcelas] = useState<ResumenParcela[]>([]);
-  const [loading,  setLoading]  = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const IP = process.env.EXPO_PUBLIC_IP_ADDRESS;
 
@@ -36,7 +36,7 @@ export default function ResumenParcelas() {
   const cargarParcelas = async () => {
     setLoading(true);
     try {
-      const res  = await fetch(`http://${IP}:3000/api/parcelas`, {
+      const res = await fetch(`http://${IP}:3000/api/parcelas`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const json = await res.json();
@@ -52,7 +52,7 @@ export default function ResumenParcelas() {
       // Cargar estadísticas de cada parcela en paralelo
       await Promise.all(base.map(async (p) => {
         try {
-          const r    = await fetch(`http://${IP}:3000/api/parcelas/${p.id}/estadisticas`, {
+          const r = await fetch(`http://${IP}:3000/api/parcelas/${p.id}/estadisticas`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await r.json();
@@ -106,7 +106,11 @@ export default function ResumenParcelas() {
       <Text className="text-base font-bold text-gray-700 dark:text-gray-200 mb-3">
         Tus parcelas
       </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 4, paddingVertical: 4 }}
+      >
         {parcelas.map((p) => {
           const interp = interpretarNDVI(p.ultimo_ndvi);
           return (
