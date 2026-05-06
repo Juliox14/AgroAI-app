@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'expo-router';
+
 import { ScrollView, View, Text, Switch, TouchableOpacity, StyleSheet, Alert, Share, Linking, Image, RefreshControl } from 'react-native';
 import { normalizarEstado } from '@/utils/normalizarEstado';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +16,7 @@ import { obtenerPendientes, ItemCola } from '@/utils/db';
 import { sincronizarCola } from '@/utils/sync';
 
 export default function ConfiguracionScreen() {
+    const router = useRouter();
     const { colorScheme, setColorScheme } = useColorScheme();
     const [notificaciones, setNotificaciones] = useState(false);
     const [locationName, setLocationName] = useState('Cargando ubicación...');
@@ -312,7 +315,7 @@ export default function ConfiguracionScreen() {
                 {/* Política de privacidad */}
                 <TouchableOpacity
                     className="flex-row items-center px-5 py-3.5 bg-white dark:bg-gray-800 mb-[1px]"
-                    onPress={() => openLink('https://tuapp.com/privacidad')}
+                    onPress={() => router.push('/ajustes/politica')}
                 >
                     <Ionicons name="lock-closed-outline" size={24} color={colorScheme === 'dark' ? '#fff' : '#333'} />
                     <Text className="flex-1 ml-4 text-base text-gray-800 dark:text-gray-100">Política de privacidad</Text>
@@ -322,7 +325,7 @@ export default function ConfiguracionScreen() {
                 {/* Términos y condiciones */}
                 <TouchableOpacity
                     className="flex-row items-center px-5 py-3.5 bg-white dark:bg-gray-800 mb-[1px]"
-                    onPress={() => openLink('https://tuapp.com/terminos')}
+                    onPress={() => router.push('/ajustes/terminos')}
                 >
                     <Ionicons name="document-text-outline" size={24} color={colorScheme === 'dark' ? '#fff' : '#333'} />
                     <Text className="flex-1 ml-4 text-base text-gray-800 dark:text-gray-100">Términos y condiciones</Text>
@@ -332,7 +335,7 @@ export default function ConfiguracionScreen() {
                 {/* Política de cookies */}
                 <TouchableOpacity
                     className="flex-row items-center px-5 py-3.5 bg-white dark:bg-gray-800 mb-[1px]"
-                    onPress={() => openLink('https://tuapp.com/cookies')}
+                    onPress={() => router.push('/ajustes/cookies')}
                 >
                     <Ionicons name="document-outline" size={24} color={colorScheme === 'dark' ? '#fff' : '#333'} />
                     <Text className="flex-1 ml-4 text-base text-gray-800 dark:text-gray-100">Política de cookies</Text>
@@ -352,7 +355,7 @@ export default function ConfiguracionScreen() {
                 {/* Comentarios */}
                 <TouchableOpacity
                     className="flex-row items-center px-5 py-3.5 bg-white dark:bg-gray-800 mb-[1px]"
-                    onPress={() => openLink('https://tuapp.com/feedback')}
+                    onPress={() => router.push('/ajustes/comentarios')}
                 >
                     <Ionicons name="chatbox-ellipses-outline" size={24} color={colorScheme === 'dark' ? '#fff' : '#333'} />
                     <Text className="flex-1 ml-4 text-base text-gray-800 dark:text-gray-100">Comentarios</Text>
