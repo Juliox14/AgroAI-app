@@ -59,11 +59,10 @@ export default function RootLayout() {
         />
 
         <Stack.Screen
-        name="resultados/SeleccionarParcela"
+          name="parcelas/editar-parcela"
           options={{ headerShown: false }}
         />
 
-          
       </Stack>
       </AuthProvider>
     </ThemeProvider>
