@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import axios from 'axios';
+import NetInfo from '@react-native-community/netinfo';
 import LocationHeader from '@/components/home/LocationHeader';
 import WeatherCard from '@/components/home/WeatherCard';
 import ResumenParcelas from '@/components/home/ResumenParcelas';
@@ -60,11 +61,21 @@ export default function Index() {
     if (latitud === undefined || longitud === undefined) return;
 
     (async () => {
-      const net = await NetInfo.fetch();
-      if (!net.isConnected) {
-        setLoading(false);
-        return; // No intenta cargar el clima sin internet
-      }
+      try {
+        const red = await NetInfo.fetch();
+        if (!red.isConnected) {
+          setLoading(false);
+          return;
+        }
+
+        const PUERTO = 4001;
+        const resp = await axios.get(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:${PUERTO}/api/weather`, {
+          params: { lat: latitud, lon: longitud }
+        });
+
+        if (resp.data && resp.data.data) {
+          setForecast(resp.data.data);
+        }
 
       setLoading(true);
       try {
@@ -74,7 +85,7 @@ export default function Index() {
         );
         if (resp.data?.data) setForecast(resp.data.data);
       } catch (err: any) {
-        console.error('Error al cargar el clima:', err);
+        console.error("Error al cargar el clima:", err);
       } finally {
         setLoading(false);
       }
