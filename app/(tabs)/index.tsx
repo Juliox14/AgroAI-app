@@ -22,17 +22,20 @@ import { useRouter } from 'expo-router';
 import { WeatherData } from '@/components/home/WeatherCard';
 import NetInfo from '@react-native-community/netinfo'
 
+let _locationCache: string | null = null;
+
 export default function Index() {
   const router = useRouter();
   const { session, payload } = useAuth();
 
-  const [locationName, setLocationName] = useState('Cargando ubicación...');
+  const [locationName, setLocationName] = useState(_locationCache ?? 'Cargando ubicación...');
   const [latitud, setLatitud] = useState<number>();
   const [longitud, setLongitud] = useState<number>();
   const [forecast, setForecast] = useState<WeatherData | null>(null);
   const [loadingForecast, setLoading] = useState(false);
 
   useEffect(() => {
+    if (_locationCache) return;
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -44,16 +47,30 @@ export default function Index() {
         setLatitud(loc.coords.latitude);
         setLongitud(loc.coords.longitude);
 
-        const [place] = await Location.reverseGeocodeAsync(loc.coords);
-        const rawState = place.region ?? '';
-        const fullState = normalizarEstado(rawState);
-        const mun = place.city || place.district || place.subregion || '';
-        setLocationName(`${mun || '—'}, ${fullState || '—'}`);
+        const red = await NetInfo.fetch();
+        if (red.isConnected) {
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${loc.coords.latitude}&lon=${loc.coords.longitude}&format=json`,
+              { headers: { 'Accept-Language': 'es' } }
+            );
+            const data = await res.json();
+            const ciudad = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality || '';
+            const estado = data.address?.state || '';
+            const nombre = `${ciudad || '—'}, ${estado || '—'}`;
+            _locationCache = nombre;
+            setLocationName(nombre);
+          } catch {
+            setLocationName('Ubicación desconocida');
+          }
+        } else {
+          setLocationName('Sin conexión');
+        }
       } catch (error) {
         console.error('Error obteniendo ubicación:', error);
         setLocationName('Ubicación desconocida');
       }
-    })();
+    })().catch(() => setLocationName('Ubicación desconocida'));
   }, []);
 
   // 🟢 EFECTO CORREGIDO Y LIMPIO

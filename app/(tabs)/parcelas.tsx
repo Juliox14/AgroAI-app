@@ -1,7 +1,7 @@
 import ParcelaCard from '@/components/ParcelaCard';
 import ParcelaCardSkeleton from '@/components/Fallbacks/ParcelaCardSkeleton';
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
@@ -13,52 +13,59 @@ import { guardarParcelasEnCache, obtenerParcelasDeCache } from '@/utils/db';
 export default function Parcelas() {
   const [parcelas, setParcelas] = useState<Parcela[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [offline, setOffline] = useState(false);
 
   const { payload, token } = useAuth();
   const router = useRouter();
 
+  const fetchParcelas = useCallback(async () => {
+    const red = await NetInfo.fetch();
+
+    if (!red.isConnected) {
+      const cache = obtenerParcelasDeCache();
+      setParcelas(cache);
+      setOffline(true);
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const json = await res.json();
+      if (json.success) {
+        setParcelas(json.data);
+        guardarParcelasEnCache(json.data);
+        setOffline(false);
+      } else {
+        console.error('Error del servidor:', json.message);
+      }
+    } catch (error) {
+      const cache = obtenerParcelasDeCache();
+      setParcelas(cache);
+      setOffline(cache.length > 0);
+      console.error('Error al cargar parcelas:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [token]);
+
   useEffect(() => {
-    const fetchParcelas = async () => {
-      const red = await NetInfo.fetch();
-
-      if (!red.isConnected) {
-        const cache = obtenerParcelasDeCache();
-        setParcelas(cache);
-        setOffline(true);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await fetch(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/parcelas`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        const json = await res.json();
-        if (json.success) {
-          setParcelas(json.data);
-          guardarParcelasEnCache(json.data);
-          setOffline(false);
-        } else {
-          console.error('Error del servidor:', json.message);
-        }
-      } catch (error) {
-        // Fallo de red inesperado: intentar cache
-        const cache = obtenerParcelasDeCache();
-        setParcelas(cache);
-        setOffline(cache.length > 0);
-        console.error('Error al cargar parcelas:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (payload) fetchParcelas();
   }, [payload]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchParcelas();
+  };
 
   const handleAddParcela = () => router.push('/parcelas/nueva-parcela');
 
@@ -100,7 +107,14 @@ export default function Parcelas() {
         </View>
       )}
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16a34a" colors={['#16a34a']} />
+        }
+      >
 
         {loading ? (
           <View key="loading" className="gap-4">
