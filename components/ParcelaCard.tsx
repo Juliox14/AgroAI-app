@@ -29,7 +29,11 @@ const ParcelaCard = ({
     };
 
     return (
-        <TouchableOpacity onPress={handleAction} className="mb-4 px-4 py-4 rounded-xl bg-white dark:bg-gray-800 shadow-md h-auto w-full">
+        <TouchableOpacity
+            onPress={handleAction}
+            className="mb-4 px-4 py-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 h-auto w-full"
+            style={{ elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 }}
+        >
             {/* Cabecera: Imagen, Nombre y Ubicación */}
             <View className="flex-row w-full pb-4 border-b border-b-gray-200 dark:border-b-gray-700 items-center">
                 <Image 
