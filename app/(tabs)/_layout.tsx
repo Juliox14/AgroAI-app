@@ -85,7 +85,6 @@ export default function LayoutTabs() {
 
                         }}
                     />
-
                     <Tabs.Screen
                         name="camara/index"
                         options={{
@@ -93,16 +92,14 @@ export default function LayoutTabs() {
                             headerShown: false,
                         }}
                     />
-
-
                     <Tabs.Screen
-                        name="tierra"
+                        name="estadisticas"
                         options={{
-                            title: 'Tierra',
+                            title: 'Estadísticas',
                             headerShown: false,
                             tabBarIcon: ({ focused }) => (
-                                <MaterialCommunityIcons
-                                    name="sprout-outline"
+                                <Ionicons
+                                    name="stats-chart-outline"
                                     size={28}
                                     color={focused ? '#4aad8e' : '#666'}
                                 />

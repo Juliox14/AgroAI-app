@@ -39,7 +39,7 @@ export default function RootLayout() {
         />
 
         <Stack.Screen
-          name="results/NDVIResult"
+          name="resultados/NDVIResultado"
           options={{
             headerShown: false,
 
