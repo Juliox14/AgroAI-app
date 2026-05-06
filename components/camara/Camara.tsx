@@ -19,6 +19,17 @@ export default function Camara() {
   const [analizando,      setAnalizando]      = useState(false);
   const [streamErrorNoir, setStreamErrorNoir] = useState(false);
   const [streamErrorRgb,  setStreamErrorRgb]  = useState(false);
+  
+  // Estado para forzar el re-montaje de los WebViews
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const recargarStreams = () => {
+    // 1. Limpiamos los errores visuales
+    setStreamErrorNoir(false);
+    setStreamErrorRgb(false);
+    // 2. Forzamos a los WebViews a reconstruirse desde cero
+    setReloadKey(prev => prev + 1);
+  };
 
   const analizarNDVI = async () => {
     if (analizando) return;
@@ -70,21 +81,27 @@ export default function Camara() {
     url: string; titulo: string; color: string;
     streamError: boolean; onError: () => void;
   }) => (
-    <View className="w-full aspect-video rounded-xl overflow-hidden">
+    <View className="w-full aspect-video rounded-xl overflow-hidden relative">
       <View className="absolute top-2 left-2 z-10 flex-row items-center bg-black/50 px-3 py-1 rounded-full border border-white/15">
         <View style={{ backgroundColor: streamError ? '#ef4444' : color }}
           className="w-1.5 h-1.5 rounded-full mr-2" />
         <Text className="text-white text-xs font-semibold tracking-wide">{titulo}</Text>
       </View>
 
-      {streamError ? (
-        <View className="flex-1 bg-zinc-900 justify-center items-center gap-2">
-          <Ionicons name="videocam-off-outline" size={36} color="#71717a" />
-          <Text className="text-zinc-500 text-sm font-medium">Cámara no disponible</Text>
-          <Text className="text-zinc-600 text-xs">Verifica la conexión con la Raspberry Pi</Text>
-        </View>
-      ) : (
+      {/* Botón de recarga individual por si solo falla una cámara */}
+      {streamError && (
+        <TouchableOpacity 
+          onPress={recargarStreams}
+          className="absolute inset-0 z-20 justify-center items-center bg-zinc-900"
+        >
+          <Ionicons name="refresh-circle-outline" size={48} color="#71717a" />
+          <Text className="text-zinc-400 text-sm font-medium mt-2">Toca para recargar cámara</Text>
+        </TouchableOpacity>
+      )}
+
+      {!streamError && (
         <WebView
+          key={reloadKey} // <- El truco maestro: cambia el valor y el componente se reinicia
           source={{
             html: `
               <!DOCTYPE html><html>
@@ -153,13 +170,16 @@ export default function Camara() {
 
       <CargandoAnalisis visible={analizando} />
 
-      <View className="absolute top-12 left-4 right-4 flex-row justify-between items-center">
+      <View className="absolute top-12 left-4 right-4 flex-row justify-between items-center z-10">
         <Boton onPress={() => router.back()} ioniconName="arrow-back" iconSize={24} iconColor="white" />
+        
         <View className="flex-row items-center bg-black/50 px-3 py-1 rounded-2xl border border-white/20">
           <View className="w-2 h-2 rounded-full bg-red-500 mr-1.5" />
           <Text className="text-white text-xs font-bold tracking-widest">LIVE</Text>
         </View>
-        <View className="w-10" />
+        
+        {/* Botón de recarga global en la esquina superior derecha */}
+        <Boton onPress={recargarStreams} ioniconName="refresh" iconSize={24} iconColor="white" />
       </View>
 
       <View className="absolute bottom-4 left-0 right-0 flex-row justify-center items-center px-10 bg-black/40 py-2.5">

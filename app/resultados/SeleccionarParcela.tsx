@@ -8,6 +8,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
+import { FileSystem, File } from 'expo-file-system';
 
 const RASPBERRY_IP = process.env.EXPO_PUBLIC_RASPBERRY_IP_ADDRESS;
 const BACKEND_IP = process.env.EXPO_PUBLIC_IP_ADDRESS;
@@ -19,7 +20,6 @@ export default function SeleccionarParcela() {
   const router = useRouter();
   const { token } = useAuth();
 
-  // Params que vienen desde la pantalla de cámara
   const { ndvi_promedio, ndvi_minimo, ndvi_maximo, ndvi_mediana } =
     useLocalSearchParams<{
       ndvi_promedio: string;
@@ -48,7 +48,7 @@ export default function SeleccionarParcela() {
       }
     };
     fetchParcelas();
-  }, []);
+  }, [token]);
 
   const guardarRegistro = async () => {
     if (!parcelaSeleccionada) {
@@ -58,37 +58,48 @@ export default function SeleccionarParcela() {
 
     setGuardando(true);
     try {
-      // 1. Descargar el colormap desde la Raspberry como blob
-      const imagenRes = await fetch(COLORMAP_URL);
-      const imagenBlob = await imagenRes.blob();
+      // 1. Descargar la imagen usando la nueva API
+      const tempFileUri = FileSystem.Paths.cache + 'ndvi_colormap_temp.jpg';
+      const tempFile = new File(tempFileUri);
+      await tempFile.downloadAsync(new URL(COLORMAP_URL));
 
-      // 2. Armar el FormData con la imagen y los metadatos
+      // 2. Armar el FormData
       const formData = new FormData();
-      formData.append('imagen', imagenBlob, 'ndvi.jpg');
+      formData.append('imagen', {
+        uri: tempFile.uri,
+        name: 'ndvi.jpg',
+        type: 'image/jpeg',
+      } as any);
+
       formData.append('parcelaId', parcelaSeleccionada);
       formData.append('ndvi_promedio', ndvi_promedio);
       formData.append('ndvi_minimo', ndvi_minimo);
       formData.append('ndvi_maximo', ndvi_maximo);
       formData.append('ndvi_mediana', ndvi_mediana);
 
-      // 3. Enviar al core service
+      // 3. Enviar al backend
       const res = await fetch(GUARDAR_URL, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
 
       const json = await res.json();
       if (!json.success) throw new Error(json.message);
 
-      // 4. Navegar al detalle de la parcela seleccionada
+      // 4. Limpiar archivo temporal
+      tempFile.delete();
+
+      // 5. Navegar al resultado
       router.replace({
         pathname: '/resultados/NDVIResultado',
         params: {
-          ndvi_promedio: ndvi_promedio,
-          ndvi_minimo: ndvi_minimo,
-          ndvi_maximo: ndvi_maximo,
-          ndvi_mediana: ndvi_mediana,
+          ndvi_promedio,
+          ndvi_minimo,
+          ndvi_maximo,
+          ndvi_mediana,
           imagen_url: json.data.imagen_url,
         }
       });
@@ -142,11 +153,13 @@ export default function SeleccionarParcela() {
               <TouchableOpacity
                 key={parcela.id}
                 onPress={() => setParcelaSeleccionada(parcela.id)}
-                className={`bg-white rounded-2xl p-4 mb-3 flex-row items-center shadow-sm border-2 ${seleccionada ? 'border-green-500' : 'border-transparent'
-                  }`}
+                className={`bg-white rounded-2xl p-4 mb-3 flex-row items-center shadow-sm border-2 ${
+                  seleccionada ? 'border-green-500' : 'border-transparent'
+                }`}
               >
-                <View className={`w-10 h-10 rounded-full items-center justify-center mr-4 ${seleccionada ? 'bg-green-500' : 'bg-gray-100'
-                  }`}>
+                <View className={`w-10 h-10 rounded-full items-center justify-center mr-4 ${
+                  seleccionada ? 'bg-green-500' : 'bg-gray-100'
+                }`}>
                   <Ionicons
                     name={seleccionada ? 'checkmark' : 'leaf-outline'}
                     size={20}
@@ -170,8 +183,9 @@ export default function SeleccionarParcela() {
         <TouchableOpacity
           onPress={guardarRegistro}
           disabled={guardando || !parcelaSeleccionada}
-          className={`py-4 rounded-2xl items-center ${parcelaSeleccionada ? 'bg-green-700' : 'bg-gray-300'
-            }`}
+          className={`py-4 rounded-2xl items-center ${
+            parcelaSeleccionada ? 'bg-green-700' : 'bg-gray-300'
+          }`}
         >
           {guardando ? (
             <ActivityIndicator color="white" />
