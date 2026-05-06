@@ -23,7 +23,64 @@ export function inicializarDB(): void {
       creado_en    TEXT    NOT NULL DEFAULT (datetime('now')),
       intentos     INTEGER NOT NULL DEFAULT 0
     );
+    CREATE TABLE IF NOT EXISTS parcelas_cache (
+      id             TEXT PRIMARY KEY,
+      datos          TEXT NOT NULL,
+      actualizado_en TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
+}
+
+export function guardarParcelasEnCache(parcelas: any[]): void {
+  for (const p of parcelas) {
+    const existing = db.getFirstSync<{ datos: string }>(
+      `SELECT datos FROM parcelas_cache WHERE id = ?`,
+      String(p.id)
+    );
+    let datosAGuardar = p;
+    if (existing) {
+      const previo = JSON.parse(existing.datos);
+      if (previo.registros) {
+        datosAGuardar = { ...p, registros: previo.registros };
+      }
+    }
+    db.runSync(
+      `INSERT INTO parcelas_cache (id, datos, actualizado_en)
+       VALUES (?, ?, datetime('now'))
+       ON CONFLICT(id) DO UPDATE SET
+         datos = excluded.datos,
+         actualizado_en = excluded.actualizado_en`,
+      String(p.id),
+      JSON.stringify(datosAGuardar)
+    );
+  }
+}
+
+export function guardarParcelaDetalleEnCache(parcela: any): void {
+  db.runSync(
+    `INSERT INTO parcelas_cache (id, datos, actualizado_en)
+     VALUES (?, ?, datetime('now'))
+     ON CONFLICT(id) DO UPDATE SET
+       datos = excluded.datos,
+       actualizado_en = excluded.actualizado_en`,
+    String(parcela.id),
+    JSON.stringify(parcela)
+  );
+}
+
+export function obtenerParcelasDeCache(): any[] {
+  const rows = db.getAllSync<{ datos: string }>(
+    `SELECT datos FROM parcelas_cache ORDER BY actualizado_en DESC`
+  );
+  return rows.map(r => JSON.parse(r.datos));
+}
+
+export function obtenerParcelaDeCache(id: string): any | null {
+  const row = db.getFirstSync<{ datos: string }>(
+    `SELECT datos FROM parcelas_cache WHERE id = ?`,
+    id
+  );
+  return row ? JSON.parse(row.datos) : null;
 }
 
 export function encolarItem(
