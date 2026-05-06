@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import axios from 'axios';
+import NetInfo from '@react-native-community/netinfo';
 import LocationHeader from '@/components/home/LocationHeader';
 import WeatherCard from '@/components/home/WeatherCard';
 import ResumenParcelas from '@/components/home/ResumenParcelas';
@@ -20,7 +21,6 @@ import { normalizarEstado } from '@/utils/normalizarEstado';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { WeatherData } from '@/components/home/WeatherCard';
-import NetInfo from '@react-native-community/netinfo';
 
 export default function Index() {
   const router = useRouter();
@@ -60,10 +60,10 @@ export default function Index() {
     if (latitud === undefined || longitud === undefined) return;
 
     (async () => {
-      const net = await NetInfo.fetch();
-      if (!net.isConnected) {
+      const red = await NetInfo.fetch();
+      if (!red.isConnected) {
         setLoading(false);
-        return; // No intenta cargar el clima sin internet
+        return;
       }
 
       setLoading(true);
@@ -74,7 +74,7 @@ export default function Index() {
         );
         if (resp.data?.data) setForecast(resp.data.data);
       } catch (err: any) {
-        console.error('Error al cargar el clima:', err);
+        console.error("Error al cargar el clima:", err);
       } finally {
         setLoading(false);
       }
